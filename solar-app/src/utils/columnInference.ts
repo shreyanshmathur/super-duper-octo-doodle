@@ -15,7 +15,7 @@ const SYNONYMS: Record<CanonicalField, string[]> = {
   ai_forecast_energy_mwh: ['ai forecast', 'ai_forecast', 'ml forecast', 'model forecast', 'predicted', 'prediction', 'expected generation', 'expected mwh', 'model output', 'day ahead forecast', 'intraday forecast', 'forecast mwh', 'ai predicted'],
   legacy_forecast_energy_mwh: ['legacy forecast', 'legacy_forecast', 'old forecast', 'manual forecast', 'traditional forecast', 'baseline forecast', 'previous forecast'],
   scheduled_energy_mwh: ['scheduled', 'schedule', 'declared', 'committed', 'grid schedule', 'dispatch schedule', 'nomination', 'declared generation', 'scheduled mwh', 'schedule mwh', 'scheduling'],
-  actual_metered_energy_mwh: ['actual', 'metered', 'actual mwh', 'actual generation', 'generation actual', 'generated energy', 'energy generated', 'energy exported', 'exported mwh', 'meter reading', 'net generation', 'plant output', 'actual metered', 'metered energy', 'power generated', 'energy output', 'generation mwh', 'actual energy', 'meter energy'],
+  actual_metered_energy_mwh: ['actual', 'metered', 'actual mwh', 'actual generation', 'generation actual', 'generated energy', 'energy generated', 'energy exported', 'exported mwh', 'meter reading', 'net generation', 'plant output', 'actual metered', 'metered energy', 'power generated', 'energy output', 'generation mwh', 'actual energy', 'meter energy', 'generation'],
   actual_scada_energy_mwh: ['scada', 'scada energy', 'scada mwh', 'scada generation', 'pi data', 'dcs energy'],
   theoretical_energy_mwh: ['theoretical', 'potential energy', 'irradiance based', 'poa based', 'theoretical generation'],
   exported_energy_mwh: ['exported', 'export energy', 'export mwh', 'grid export', 'energy export'],
@@ -85,10 +85,10 @@ export function detectDataType(values: (string | number | null)[]): ColDataType 
   const numericCount = nonNull.filter(v => !isNaN(Number(v))).length;
   const numericRatio = numericCount / nonNull.length;
 
-  // Datetime
+  // Datetime — require explicit date/time separator patterns only
   const dtCount = nonNull.filter(v => {
     const s = String(v);
-    return /\d{2}[:/]\d{2}/.test(s) || /\d{4}-\d{2}-\d{2}/.test(s) || !isNaN(Date.parse(s));
+    return /\d{2}[:/]\d{2}/.test(s) || /\d{4}-\d{2}-\d{2}/.test(s) || /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(s);
   }).length;
   if (dtCount / nonNull.length > 0.7) return 'datetime';
 
@@ -99,13 +99,14 @@ export function detectDataType(values: (string | number | null)[]): ColDataType 
   const max = Math.max(...nums);
   const min = Math.min(...nums);
 
-  // Currency – large positive integers
-  if (min >= 0 && max > 1000) return 'currency';
-  // Percentage – 0–100 or 0–1
-  if ((min >= 0 && max <= 100) && nums.filter(n => n > 1).length > nums.length * 0.4) return 'percentage';
+  // Percentage 0–1 range (fractional: 0.85 = 85%)
   if (min >= 0 && max <= 1) return 'percentage';
-  // Energy MWh per 15-min block – 0–30
+  // Energy MWh per 15-min block – small positives 0–35
   if (min >= 0 && max <= 35) return 'energy';
+  // Currency – large positive numbers
+  if (min >= 0 && max > 1000) return 'currency';
+  // Percentage – values clearly in 0–100 range with most > 1
+  if ((min >= 0 && max <= 100) && nums.filter(n => n > 1).length > nums.length * 0.4) return 'percentage';
 
   return 'numeric';
 }
@@ -226,7 +227,7 @@ export function classifyDataset(headers: string[], rows: RawRow[]): DatasetType 
 
   const has = (...fields: CanonicalField[]) => fields.some(f => mapped.has(f));
 
-  if (has('asset_id', 'asset_status', 'inverter_status', 'fault_code', 'availability')) return 'asset_health';
+  if (has('asset_id') || ((has('fault_code') || has('availability') || has('inverter_status')) && !has('actual_metered_energy_mwh'))) return 'asset_health';
   if (has('cloud_cover', 'irradiance', 'ghi', 'temperature', 'wind_speed')) return 'weather';
   if (has('consumer_type', 'consumer_id') && has('actual_metered_energy_mwh', 'gross_revenue')) return 'consumer_allocation';
   if (has('tariff_inr_per_kwh', 'contract_type', 'settlement_status') && !has('actual_metered_energy_mwh')) return 'tariff_contract';

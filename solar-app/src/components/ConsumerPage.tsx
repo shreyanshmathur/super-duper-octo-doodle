@@ -13,7 +13,7 @@ export const ConsumerPage: React.FC = () => {
   const hasConsumerData = consumerRows.length > 0;
   const useRows = hasConsumerData ? consumerRows : [];
 
-  if (!intervalRows.length) return <EmptyState icon="🏭" message="No data loaded" />;
+  if (!intervalRows.length && !consumerRows.length) return <EmptyState icon="🏭" message="No data loaded" />;
 
   // If no consumer rows, build a synthetic single-offtaker view from interval rows
   const allRows = hasConsumerData

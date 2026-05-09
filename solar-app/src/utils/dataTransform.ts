@@ -378,7 +378,7 @@ export function generateRecommendations(
 
   const frozenEdge = edges.filter(e => e.type === 'Frozen Meter Suspected');
   if (frozenEdge.length > 0) {
-    recs.push({ id: 'frozen_meter', category: 'data_quality', priority: 'high', title: 'Frozen meter values detected', body: `${frozenEdge.length} potential meter freeze event(s) detected. Settlement using frozen values will be incorrect.`, action: 'Mark affected blocks as provisional. Inspect meters and escalate to SLDC for correction.' });
+    recs.push({ id: 'frozen_meter', category: 'data_quality', priority: 'medium', title: 'Frozen meter values detected', body: `${frozenEdge.length} potential meter freeze event(s) detected. Settlement using frozen values will be incorrect.`, action: 'Mark affected blocks as provisional. Inspect meters and escalate to SLDC for correction.' });
   }
 
   return recs;
