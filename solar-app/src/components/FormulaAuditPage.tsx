@@ -23,7 +23,7 @@ export const FormulaAuditPage: React.FC = () => {
 
   return (
     <div className="space-y-6 fade-in">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
         <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
           <div className="text-3xl font-bold text-green-600">{stats.pass}</div>
           <div className="text-xs text-slate-500 mt-1">Formula Checks Passed</div>

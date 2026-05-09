@@ -28,7 +28,7 @@ export const EdgeCasePage: React.FC = () => {
   return (
     <div className="space-y-6 fade-in">
       {/* Summary badges */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
         <div className={`rounded-xl p-4 text-center border ${critical.length ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-200'}`}>
           <div className={`text-3xl font-bold ${critical.length ? 'text-red-600' : 'text-slate-400'}`}>{critical.length}</div>
           <div className="text-xs font-semibold text-slate-500 mt-1">Critical Issues</div>
