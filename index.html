@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Solar Forecasting & Revenue Intelligence Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --blue-1: #EFF6FF;
+      --blue-2: #DBEAFE;
+      --blue-3: #93C5FD;
+      --blue-4: #3B82F6;
+      --blue-5: #1D4ED8;
+      --green-1: #F0FDF4;
+      --green-2: #DCFCE7;
+      --green-3: #86EFAC;
+      --green-4: #22C55E;
+      --green-5: #15803D;
+      --amber-1: #FFFBEB;
+      --amber-3: #FCD34D;
+      --amber-4: #F59E0B;
+      --red-1: #FEF2F2;
+      --red-3: #FCA5A5;
+      --red-4: #EF4444;
+      --red-5: #B91C1C;
+      --grey-0: #F9FAFB;
+      --grey-1: #F3F4F6;
+      --grey-2: #E5E7EB;
+      --grey-3: #D1D5DB;
+      --grey-4: #9CA3AF;
+      --grey-5: #6B7280;
+      --grey-6: #4B5563;
+      --grey-7: #374151;
+      --grey-8: #1F2937;
+      --grey-9: #111827;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+      --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,.1), 0 4px 6px rgba(0,0,0,.05);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Inter', sans-serif;
+      background: #F0F4F8;
+      color: var(--grey-8);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 60%, #1D4ED8 100%);
+      padding: 28px 40px 24px;
+      color: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,.25);
+    }
+    .header-inner {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .header-left { display: flex; align-items: center; gap: 16px; }
+    .header-icon {
+      width: 48px; height: 48px;
+      background: rgba(255,255,255,.15);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .header-title { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
+    .header-subtitle { font-size: 12.5px; color: rgba(255,255,255,.7); margin-top: 2px; }
+    .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .live-badge {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(34,197,94,.2);
+      border: 1px solid rgba(34,197,94,.4);
+      color: #86EFAC;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: .3px;
+    }
+    .live-dot {
+      width: 7px; height: 7px;
+      background: #22C55E;
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .3; }
+    }
+    .refresh-btn {
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.3);
+      color: #fff;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      transition: background .2s;
+    }
+    .refresh-btn:hover { background: rgba(255,255,255,.25); }
+    .refresh-btn:active { transform: scale(.97); }
+    .last-updated { font-size: 11px; color: rgba(255,255,255,.5); }
+
+    /* ── LAYOUT ── */
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 28px 40px 60px;
+    }
+
+    /* ── SECTION LABELS ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--grey-4);
+      margin-bottom: 14px;
+    }
+
+    /* ── KPI CARDS ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 1200px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 700px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+    .kpi-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--grey-2);
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .kpi-card.blue::before { background: var(--blue-4); }
+    .kpi-card.green::before { background: var(--green-4); }
+    .kpi-card.amber::before { background: var(--amber-4); }
+    .kpi-card.red::before { background: var(--red-4); }
+    .kpi-card.indigo::before { background: #6366F1; }
+    .kpi-card.teal::before { background: #14B8A6; }
+    .kpi-icon {
+      font-size: 22px;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--grey-5);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 4px;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .kpi-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--grey-9);
+      letter-spacing: -.5px;
+      line-height: 1.2;
+    }
+    .kpi-sub {
+      font-size: 11px;
+      color: var(--grey-4);
+      margin-top: 4px;
+    }
+    .kpi-delta {
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 6px;
+      padding: 2px 7px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+    .kpi-delta.up { background: var(--green-2); color: var(--green-5); }
+    .kpi-delta.down { background: var(--red-1); color: var(--red-5); }
+
+    /* ── TOOLTIP ── */
+    .tooltip-wrap { position: relative; display: inline-flex; align-items: center; }
+    .tooltip-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 14px; height: 14px;
+      background: var(--grey-3);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 9px;
+      font-weight: 700;
+      cursor: help;
+      margin-left: 3px;
+      flex-shrink: 0;
+    }
+    .tooltip-box {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--grey-9);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 400;
+      padding: 7px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      z-index: 200;
+      pointer-events: none;
+      line-height: 1.5;
+      max-width: 220px;
+      white-space: normal;
+      text-align: center;
+    }
+    .tooltip-wrap:hover .tooltip-box { display: block; }
+
+    /* ── CARDS ── */
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--grey-2);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--grey-2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--grey-8);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title-icon {
+      width: 30px; height: 30px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .card-body { padding: 22px; }
+
+    /* ── FLOW DIAGRAM ── */
+    .flow-section { margin-bottom: 32px; }
+    .flow-container {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      overflow-x: auto;
+      padding: 24px 28px;
+    }
+    .flow-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      min-width: 120px;
+      position: relative;
+    }
+    .flow-box {
+      background: #fff;
+      border: 2px solid var(--blue-3);
+      border-radius: var(--radius-sm);
+      padding: 14px 12px;
+      text-align: center;
+      width: 100%;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      z-index: 2;
+    }
+    .flow-box-icon { font-size: 22px; margin-bottom: 6px; }
+    .flow-box-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--grey-8);
+      line-height: 1.3;
+      margin-bottom: 5px;
+    }
+    .flow-box-desc {
+      font-size: 10.5px;
+      color: var(--grey-5);
+      line-height: 1.4;
+    }
+    .flow-arrow {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      color: var(--blue-4);
+      font-size: 18px;
+      z-index: 2;
+    }
+    /* Color variations for flow boxes */
+    .flow-box.solar { border-color: var(--amber-4); background: var(--amber-1); }
+    .flow-box.scada { border-color: var(--green-4); background: var(--green-1); }
+    .flow-box.weather { border-color: #06B6D4; background: #ECFEFF; }
+    .flow-box.ai { border-color: #6366F1; background: #EEF2FF; }
+    .flow-box.forecast { border-color: var(--blue-4); background: var(--blue-1); }
+    .flow-box.schedule { border-color: #8B5CF6; background: #F5F3FF; }
+    .flow-box.actual { border-color: var(--green-4); background: var(--green-1); }
+    .flow-box.deviation { border-color: var(--red-4); background: var(--red-1); }
+    .flow-box.revenue { border-color: var(--green-5); background: var(--green-2); }
+
+    /* ── TWO COLUMN ── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 32px; }
+    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+    .three-col { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 32px; }
+    @media (max-width: 900px) { .three-col { grid-template-columns: 1fr; } }
+
+    /* ── TABLE ── */
+    .table-wrapper {
+      overflow-x: auto;
+      margin-bottom: 32px;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12.5px;
+    }
+    .data-table th {
+      background: var(--grey-1);
+      color: var(--grey-6);
+      font-weight: 700;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      padding: 10px 14px;
+      text-align: right;
+      border-bottom: 2px solid var(--grey-2);
+      white-space: nowrap;
+    }
+    .data-table th:first-child { text-align: left; }
+    .data-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--grey-2);
+      text-align: right;
+      color: var(--grey-7);
+    }
+    .data-table td:first-child { text-align: left; font-weight: 600; color: var(--grey-9); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: var(--grey-0); }
+    .data-table tfoot td {
+      font-weight: 700;
+      color: var(--grey-9);
+      background: var(--blue-1);
+      border-top: 2px solid var(--blue-3);
+    }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 10.5px;
+      font-weight: 600;
+    }
+    .pill-discom { background: var(--blue-2); color: var(--blue-5); }
+    .pill-open { background: #EDE9FE; color: #6D28D9; }
+    .pill-captive { background: var(--green-2); color: var(--green-5); }
+    .pill-exchange { background: var(--amber-1); color: #92400E; }
+    .penalty-val { color: var(--red-5); font-weight: 600; }
+    .revenue-val { color: var(--green-5); font-weight: 700; }
+    .deviation-pos { color: var(--green-5); }
+    .deviation-neg { color: var(--red-5); }
+
+    /* ── CHART CONTAINERS ── */
+    .chart-container { position: relative; }
+
+    /* ── PENALTY SECTION ── */
+    .penalty-comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 600px) { .penalty-comparison { grid-template-columns: 1fr; } }
+    .penalty-card {
+      border-radius: var(--radius-sm);
+      padding: 18px 20px;
+    }
+    .penalty-card.before {
+      background: var(--red-1);
+      border: 1px solid var(--red-3);
+    }
+    .penalty-card.after {
+      background: var(--green-1);
+      border: 1px solid var(--green-3);
+    }
+    .penalty-card-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: 10px;
+    }
+    .penalty-card.before .penalty-card-label { color: var(--red-5); }
+    .penalty-card.after .penalty-card-label { color: var(--green-5); }
+    .penalty-metric { margin-bottom: 8px; }
+    .penalty-metric-label { font-size: 11px; color: var(--grey-5); }
+    .penalty-metric-val { font-size: 18px; font-weight: 700; }
+    .penalty-card.before .penalty-metric-val { color: var(--red-5); }
+    .penalty-card.after .penalty-metric-val { color: var(--green-5); }
+    .penalty-sub { font-size: 11px; color: var(--grey-5); margin-top: 2px; }
+    .saved-banner {
+      background: linear-gradient(135deg, #064E3B, #065F46);
+      color: #fff;
+      border-radius: var(--radius-sm);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .saved-banner-label { font-size: 12px; opacity: .8; }
+    .saved-banner-val { font-size: 28px; font-weight: 800; letter-spacing: -.5px; }
+
+    /* ── AI INSIGHTS ── */
+    .insight-list { display: flex; flex-direction: column; gap: 12px; }
+    .insight-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      background: var(--grey-0);
+      border: 1px solid var(--grey-2);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+    }
+    .insight-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .insight-warn { background: var(--amber-1); }
+    .insight-alert { background: var(--red-1); }
+    .insight-info { background: var(--blue-1); }
+    .insight-ok { background: var(--green-1); }
+    .insight-text { font-size: 12.5px; color: var(--grey-7); line-height: 1.5; }
+    .insight-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      margin-bottom: 3px;
+    }
+    .tag-warn { background: var(--amber-3); color: #78350F; }
+    .tag-alert { background: var(--red-3); color: var(--red-5); }
+    .tag-info { background: var(--blue-2); color: var(--blue-5); }
+    .tag-ok { background: var(--green-3); color: var(--green-5); }
+
+    /* ── ASSUMPTIONS + EXPLAINER ── */
+    .assumptions-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 700px) { .assumptions-grid { grid-template-columns: 1fr 1fr; } }
+    .assumption-item {
+      background: var(--grey-0);
+      border: 1px solid var(--grey-2);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+    }
+    .assumption-key { font-size: 10.5px; color: var(--grey-4); margin-bottom: 2px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+    .assumption-val { font-size: 13px; font-weight: 700; color: var(--grey-8); }
+
+    .explainer-box {
+      background: linear-gradient(135deg, var(--blue-1), #EEF2FF);
+      border: 1px solid var(--blue-2);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 32px;
+    }
+    .explainer-title { font-size: 15px; font-weight: 700; color: var(--blue-5); margin-bottom: 10px; }
+    .explainer-text { font-size: 13px; color: var(--grey-6); line-height: 1.7; }
+
+    /* ── GLOSSARY ── */
+    .glossary { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+    .glossary-item {
+      background: #fff;
+      border: 1px solid var(--grey-2);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      font-size: 11.5px;
+    }
+    .glossary-term { font-weight: 700; color: var(--grey-8); }
+    .glossary-def { color: var(--grey-5); margin-top: 1px; }
+
+    /* ── PROGRESS BARS ── */
+    .progress-row { margin-bottom: 12px; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+    .progress-bar-bg { background: var(--grey-2); border-radius: 99px; height: 8px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; border-radius: 99px; transition: width .6s ease; }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--grey-4);
+      padding: 20px 40px;
+      border-top: 1px solid var(--grey-2);
+    }
+
+    /* ── UTILITY ── */
+    .mb-8 { margin-bottom: 8px; }
+    .mb-16 { margin-bottom: 16px; }
+    .mb-24 { margin-bottom: 24px; }
+    .mb-32 { margin-bottom: 32px; }
+    .text-right { text-align: right; }
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .gap-8 { gap: 8px; }
+    .gap-16 { gap: 16px; }
+    .font-bold { font-weight: 700; }
+    .text-sm { font-size: 12px; }
+    .text-xs { font-size: 11px; }
+    .text-green { color: var(--green-5); }
+    .text-red { color: var(--red-5); }
+    .text-blue { color: var(--blue-5); }
+    .text-grey { color: var(--grey-5); }
+
+    /* ── ANIMATED COUNTER ── */
+    .counting { animation: countIn .4s ease; }
+    @keyframes countIn { from { opacity: .4; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="header-icon">☀️</div>
+      <div>
+        <div class="header-title">AI Solar Forecasting &amp; Revenue Intelligence Dashboard</div>
+        <div class="header-subtitle">Real-time generation, scheduling, deviation penalty, and revenue tracking for large-scale solar plants</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        Live Simulation
+      </div>
+      <div>
+        <button class="refresh-btn" onclick="refreshSimulation()">
+          <span id="refresh-icon">↻</span> Refresh Simulation
+        </button>
+        <div class="last-updated" id="last-updated" style="margin-top:4px;text-align:right;"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════ PAGE -->
+<div class="page">
+
+  <!-- KPI CARDS -->
+  <div class="section-label" style="margin-top:8px;">Key Performance Indicators</div>
+  <div class="kpi-grid mb-32">
+    <div class="kpi-card blue">
+      <span class="kpi-icon">🏭</span>
+      <div class="kpi-label">Plant Capacity</div>
+      <div class="kpi-value">100 MW</div>
+      <div class="kpi-sub">Installed PV capacity</div>
+    </div>
+    <div class="kpi-card amber">
+      <span class="kpi-icon">⚡</span>
+      <div class="kpi-label">
+        Current Generation
+        <span class="tooltip-wrap">
+          <span class="tooltip-icon">?</span>
+          <span class="tooltip-box">The actual power output from the solar plant at this moment, in Megawatts (MW).</span>
+        </span>
+      </div>
+      <div class="kpi-value" id="kpi-generation">—</div>
+      <div class="kpi-sub">Live output (MW)</div>
+      <span class="kpi-delta up" id="kpi-generation-delta"></span>
+    </div>
+    <div class="kpi-card green">
+      <span class="kpi-icon">🎯</span>
+      <div class="kpi-label">
+        AI Forecast Accuracy
+        <span class="tooltip-wrap">
+          <span class="tooltip-icon">?</span>
+          <span class="tooltip-box">100% minus the average absolute percentage error between AI forecast and actual generation across all 15-minute blocks today.</span>
+        </span>
+      </div>
+      <div class="kpi-value" id="kpi-accuracy">—</div>
+      <div class="kpi-sub">vs 82% without AI</div>
+      <span class="kpi-delta up" id="kpi-accuracy-delta"></span>
+    </div>
+    <div class="kpi-card blue">
+      <span class="kpi-icon">📅</span>
+      <div class="kpi-label">
+        Scheduled Energy Today
+        <span class="tooltip-wrap">
+          <span class="tooltip-icon">?</span>
+          <span class="tooltip-box">Total energy committed to the grid and consumers in the Day-Ahead Schedule (DAS) for today, in MWh.</span>
+        </span>
+      </div>
+      <div class="kpi-value" id="kpi-scheduled">—</div>
+      <div class="kpi-sub">MWh committed</div>
+    </div>
+    <div class="kpi-card teal">
+      <span class="kpi-icon">💰</span>
+      <div class="kpi-label">Revenue Today</div>
+      <div class="kpi-value" id="kpi-revenue">—</div>
+      <div class="kpi-sub">Net after penalties</div>
+      <span class="kpi-delta up" id="kpi-revenue-delta"></span>
+    </div>
+    <div class="kpi-card green">
+      <span class="kpi-icon">🛡️</span>
+      <div class="kpi-label">
+        Penalty Avoided by AI
+        <span class="tooltip-wrap">
+          <span class="tooltip-icon">?</span>
+          <span class="tooltip-box">Difference between estimated penalty without AI forecasting and actual penalty incurred with AI forecasting.</span>
+        </span>
+      </div>
+      <div class="kpi-value" id="kpi-avoided">—</div>
+      <div class="kpi-sub">Savings vs no-AI baseline</div>
+    </div>
+  </div>
+
+  <!-- FLOW DIAGRAM -->
+  <div class="section-label">AI Solar Forecasting — End-to-End Flow</div>
+  <div class="card flow-section mb-32">
+    <div class="card-header">
+      <div class="card-title">
+        <div class="card-title-icon" style="background:#FEF3C7;">🔄</div>
+        AI-Powered Generation-to-Revenue Pipeline
+      </div>
+      <span style="font-size:11px;color:var(--grey-4);">Data flows left → right through each stage</span>
+    </div>
+    <div class="flow-container">
+      <div class="flow-step">
+        <div class="flow-box solar">
+          <div class="flow-box-icon">☀️</div>
+          <div class="flow-box-title">Solar PV Plant</div>
+          <div class="flow-box-desc">100 MW capacity generating electricity based on sunlight &amp; plant availability</div>
+        </div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-box scada">
+          <div class="flow-box-icon">📡</div>
+          <div class="flow-box-title">SCADA / Smart Meters</div>
+          <div class="flow-box-desc">Captures real-time generation, inverter status &amp; plant performance data</div>
+        </div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-box weather">
+          <div class="flow-box-icon">🌤️</div>
+          <div class="flow-box-title">Weather &amp; Irradiance Data</div>
+          <div class="flow-box-desc">Satellite, NWP, cloud cover &amp; GHI/DNI irradiance feeds every 15 minutes</div>
+        </div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-box ai">
+          <div class="flow-box-icon">🤖</div>
+          <div class="flow-box-title">AI Forecasting Engine</div>
+          <div class="flow-box-desc">ML model predicts generation using weather, cloud cover, irradiance &amp; historical plant data</div>
+        </div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-box forecast">
+          <div class="flow-box-icon">📈</div>
+          <div class="flow-box-title">Day-Ahead &amp; Intraday Forecast</div>
+          <div class="flow-box-desc">AI-generated 15-min generation schedule submitted to SLDC / RLDC</div>
+        </div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-box schedule">
+          <div class="flow-box-icon">🔌</div>
+          <div class="flow-box-title">Power Scheduling</div>
+          <div class="flow-box-desc">Allocates energy to DISCOM PPA, Open Access, Captive Users &amp; Power Exchange</div>
+        </div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-box actual">
+          <div class="flow-box-icon">⚡</div>
+          <div class="flow-box-title">Actual Generation</div>
+          <div class="flow-box-desc">Real metered output compared against scheduled energy block-by-block</div>
+        </div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-box deviation">
+          <div class="flow-box-icon">⚠️</div>
+          <div class="flow-box-title">Deviation Calculation</div>
+          <div class="flow-box-desc">Computes Actual − Scheduled; penalties applied at ₹1.25/kWh deviation</div>
+        </div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-box revenue">
+          <div class="flow-box-icon">💹</div>
+          <div class="flow-box-title">Revenue &amp; Penalty Dashboard</div>
+          <div class="flow-box-desc">Net revenue = Gross Revenue − Deviation Penalty, tracked per consumer</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW -->
+  <div class="two-col mb-32">
+    <!-- Line Chart -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-title-icon" style="background:#EFF6FF;">📊</div>
+          Forecast vs Scheduled vs Actual Generation
+        </div>
+        <span style="font-size:11px;color:var(--grey-4);">MWh per 15-min block</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-container" style="height:260px;">
+          <canvas id="lineChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <!-- Bar Chart -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-title-icon" style="background:#F0FDF4;">💰</div>
+          Revenue by Consumer Type
+        </div>
+        <span style="font-size:11px;color:var(--grey-4);">Net revenue in ₹</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-container" style="height:260px;">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REVENUE TABLE -->
+  <div class="section-label">Real-Time Revenue Calculation — 15-Minute Blocks</div>
+  <div class="card table-wrapper mb-32">
+    <div class="card-header">
+      <div class="card-title">
+        <div class="card-title-icon" style="background:#F5F3FF;">📋</div>
+        Block-wise Generation, Deviation &amp; Revenue Breakdown
+        <span class="tooltip-wrap">
+          <span class="tooltip-icon">?</span>
+          <span class="tooltip-box">Each row = one 15-minute SLDC time block. Deviation Penalty = |Deviation| × 1000 × ₹1.25. Net Revenue = Gross Revenue − Penalty.</span>
+        </span>
+      </div>
+      <span style="font-size:11px;color:var(--grey-4);">Penalty rate: ₹1.25/kWh deviation</span>
+    </div>
+    <table class="data-table" id="revenue-table">
+      <thead>
+        <tr>
+          <th>Time Block</th>
+          <th>AI Forecast<br>MWh</th>
+          <th>Scheduled<br>MWh</th>
+          <th>Actual<br>MWh</th>
+          <th>Deviation<br>MWh</th>
+          <th>Consumer Type</th>
+          <th>Tariff<br>₹/kWh</th>
+          <th>Gross Revenue ₹</th>
+          <th>Dev. Penalty ₹</th>
+          <th>Net Revenue ₹</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+      <tfoot id="table-foot"></tfoot>
+    </table>
+  </div>
+
+  <!-- PENALTY + AI INSIGHTS -->
+  <div class="three-col">
+    <!-- Penalty Reduction -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-title-icon" style="background:#FEF2F2;">🛡️</div>
+          AI Penalty Reduction Impact
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="penalty-comparison">
+          <div class="penalty-card before">
+            <div class="penalty-card-label">❌ Without AI Forecasting</div>
+            <div class="penalty-metric">
+              <div class="penalty-metric-label">Forecast Accuracy</div>
+              <div class="penalty-metric-val">82%</div>
+            </div>
+            <div class="penalty-metric">
+              <div class="penalty-metric-label">Deviation Penalty</div>
+              <div class="penalty-metric-val">₹4,80,000</div>
+            </div>
+            <div class="penalty-sub">Higher error → higher penalties</div>
+          </div>
+          <div class="penalty-card after">
+            <div class="penalty-card-label">✅ With AI Forecasting</div>
+            <div class="penalty-metric">
+              <div class="penalty-metric-label">Forecast Accuracy</div>
+              <div class="penalty-metric-val" id="penalty-accuracy-val">—</div>
+            </div>
+            <div class="penalty-metric">
+              <div class="penalty-metric-label">Deviation Penalty</div>
+              <div class="penalty-metric-val" id="penalty-ai-val">—</div>
+            </div>
+            <div class="penalty-sub">Better model → lower exposure</div>
+          </div>
+        </div>
+        <div class="saved-banner">
+          <div>
+            <div class="saved-banner-label">Total Penalty Avoided by AI Today</div>
+            <div class="saved-banner-val" id="saved-val">—</div>
+          </div>
+          <div style="font-size:36px;">🏆</div>
+        </div>
+        <div style="margin-top:20px;">
+          <div class="section-label" style="margin-bottom:10px;">Accuracy Improvement</div>
+          <div class="progress-row">
+            <div class="progress-label">
+              <span>Without AI: 82%</span>
+              <span>82%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width:82%;background:var(--red-4);"></div>
+            </div>
+          </div>
+          <div class="progress-row">
+            <div class="progress-label">
+              <span>With AI: <span id="progress-ai-pct">—</span></span>
+              <span id="progress-ai-pct2">—</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" id="progress-ai-bar" style="width:0%;background:var(--green-4);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Insights -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <div class="card-title-icon" style="background:#EEF2FF;">🤖</div>
+          AI Recommendations
+        </div>
+        <span style="font-size:11px;background:var(--blue-2);color:var(--blue-5);padding:2px 8px;border-radius:20px;font-weight:700;">4 Active</span>
+      </div>
+      <div class="card-body">
+        <div class="insight-list">
+          <div class="insight-item">
+            <div class="insight-icon insight-warn">⛅</div>
+            <div class="insight-text">
+              <div><span class="insight-tag tag-warn">Weather Alert</span></div>
+              Cloud cover expected to increase between 13:00–14:00. <strong>Reduce schedule by 8%</strong> to avoid deviation penalty.
+            </div>
+          </div>
+          <div class="insight-item">
+            <div class="insight-icon insight-alert">🔧</div>
+            <div class="insight-text">
+              <div><span class="insight-tag tag-alert">Equipment</span></div>
+              Inverter Block 3 is underperforming. Estimated revenue leakage: <strong>₹42,000 today</strong>. Schedule maintenance check.
+            </div>
+          </div>
+          <div class="insight-item">
+            <div class="insight-icon insight-info">📊</div>
+            <div class="insight-text">
+              <div><span class="insight-tag tag-info">Optimization</span></div>
+              Open Access tariff (₹5.80/kWh) is higher than DISCOM PPA (₹3.20/kWh). <strong>Prioritize Open Access allocation</strong> where contract permits.
+            </div>
+          </div>
+          <div class="insight-item">
+            <div class="insight-icon insight-alert">⚠️</div>
+            <div class="insight-text">
+              <div><span class="insight-tag tag-alert">Risk Alert</span></div>
+              Forecast deviation risk is high for the next 2 time blocks. <strong>Update intraday schedule</strong> via SLDC portal now.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPLAINER -->
+  <div class="explainer-box">
+    <div class="explainer-title">💡 How This Works — Plain English</div>
+    <div class="explainer-text">
+      AI converts solar plant data into financial intelligence. It predicts how much power the plant will generate by analysing weather forecasts, satellite irradiance data, cloud cover patterns, and historical plant performance. This AI forecast is used to schedule power delivery to consumers — DISCOMs, open-access industries, captive users, and power exchanges. When actual generation matches the schedule closely, deviation penalties are avoided. When they diverge, penalties are deducted from revenue. The dashboard tracks all of this in real time, showing the developer exactly how much energy was generated, how much was scheduled, what revenue was earned from each consumer, what penalties were incurred, and how much money AI helped save by reducing forecast error.
+    </div>
+    <!-- GLOSSARY -->
+    <div class="glossary" style="margin-top:16px;">
+      <div class="glossary-item">
+        <div class="glossary-term">Forecast</div>
+        <div class="glossary-def">AI prediction of future generation (MWh)</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Schedule</div>
+        <div class="glossary-def">Generation committed to grid in advance</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Actual Generation</div>
+        <div class="glossary-def">Real metered output from the plant</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Deviation</div>
+        <div class="glossary-def">Actual − Scheduled (positive or negative)</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Penalty</div>
+        <div class="glossary-def">Fine for deviating from schedule (₹/kWh)</div>
+      </div>
+      <div class="glossary-item">
+        <div class="glossary-term">Net Revenue</div>
+        <div class="glossary-def">Gross revenue minus deviation penalty</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODEL ASSUMPTIONS -->
+  <div class="section-label">Model Assumptions</div>
+  <div class="card mb-32">
+    <div class="card-body">
+      <div class="assumptions-grid">
+        <div class="assumption-item">
+          <div class="assumption-key">Solar Plant Capacity</div>
+          <div class="assumption-val">100 MW (Installed PV)</div>
+        </div>
+        <div class="assumption-item">
+          <div class="assumption-key">Time Block Duration</div>
+          <div class="assumption-val">15 minutes (SLDC standard)</div>
+        </div>
+        <div class="assumption-item">
+          <div class="assumption-key">Deviation Penalty Rate</div>
+          <div class="assumption-val">₹1.25 per kWh deviation</div>
+        </div>
+        <div class="assumption-item">
+          <div class="assumption-key">DISCOM PPA Tariff</div>
+          <div class="assumption-val">₹3.20 / kWh</div>
+        </div>
+        <div class="assumption-item">
+          <div class="assumption-key">Open Access Tariff</div>
+          <div class="assumption-val">₹5.80 / kWh</div>
+        </div>
+        <div class="assumption-item">
+          <div class="assumption-key">Captive User Tariff</div>
+          <div class="assumption-val">₹4.50 / kWh</div>
+        </div>
+        <div class="assumption-item">
+          <div class="assumption-key">Power Exchange Tariff</div>
+          <div class="assumption-val">₹4.10 / kWh (variable)</div>
+        </div>
+        <div class="assumption-item">
+          <div class="assumption-key">AI Forecast Inputs</div>
+          <div class="assumption-val">Weather, irradiance, cloud, SCADA</div>
+        </div>
+        <div class="assumption-item">
+          <div class="assumption-key">Data Status</div>
+          <div class="assumption-val">Simulated for prototype purposes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<footer class="footer">
+  AI Solar Forecasting &amp; Revenue Intelligence Dashboard — Prototype Demo &nbsp;|&nbsp; Data is simulated for illustrative purposes only &nbsp;|&nbsp; All calculations use consistent internal formulas
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════ SCRIPT -->
+<script>
+// ── CONSTANTS ──────────────────────────────────────────────────────
+const CAPACITY_MW   = 100;
+const PENALTY_RATE  = 1.25;   // ₹ per kWh
+const PENALTY_NO_AI = 480000; // ₹ baseline without AI
+
+const TIME_BLOCKS = [
+  '10:00–10:15','10:15–10:30','10:30–10:45','10:45–11:00','11:00–11:15',
+  '11:15–11:30','11:30–11:45','11:45–12:00','12:00–12:15','12:15–12:30',
+];
+
+const CONSUMERS = [
+  { type: 'DISCOM PPA',           tariff: 3.20, pill: 'pill-discom'   },
+  { type: 'Open Access Industrial',tariff: 5.80, pill: 'pill-open'     },
+  { type: 'Captive User',         tariff: 4.50, pill: 'pill-captive'  },
+  { type: 'Power Exchange',       tariff: 4.10, pill: 'pill-exchange' },
+];
+
+// ── CHART REFS ─────────────────────────────────────────────────────
+let lineChart, barChart;
+
+// ── RANDOM HELPERS ─────────────────────────────────────────────────
+function rand(min, max, dp = 2) {
+  return +((Math.random() * (max - min) + min).toFixed(dp));
+}
+function fmtINR(n) {
+  return '₹' + Math.round(n).toLocaleString('en-IN');
+}
+function fmtMWh(n) { return n.toFixed(2) + ' MWh'; }
+
+// ── SIMULATION CORE ────────────────────────────────────────────────
+function generateTableData() {
+  const rows = [];
+
+  // Realistic solar generation curve peaking around mid-day
+  const baseActuals = [18, 20, 22, 23, 24, 24.5, 23.5, 22, 20, 18];
+
+  for (let i = 0; i < TIME_BLOCKS.length; i++) {
+    const base    = baseActuals[i];
+    const actual  = rand(base * 0.92, base * 1.06);
+    const forecast= rand(actual * 0.96, actual * 1.04);  // AI very close
+    const scheduled = +((forecast + rand(-0.4, 0.4)).toFixed(2));
+    const deviation = +(actual - scheduled).toFixed(3);
+    const absDevKWh = Math.abs(deviation) * 1000;
+
+    const consumerIdx = i % CONSUMERS.length;
+    const consumer    = CONSUMERS[consumerIdx];
+    const grossRev    = actual * 1000 * consumer.tariff;
+    const penalty     = absDevKWh * PENALTY_RATE;
+    const netRev      = grossRev - penalty;
+
+    rows.push({
+      block:     TIME_BLOCKS[i],
+      forecast:  +forecast.toFixed(3),
+      scheduled: +scheduled.toFixed(3),
+      actual:    +actual.toFixed(3),
+      deviation: +deviation.toFixed(3),
+      consumer,
+      tariff:    consumer.tariff,
+      grossRev:  +grossRev.toFixed(0),
+      penalty:   +penalty.toFixed(0),
+      netRev:    +netRev.toFixed(0),
+    });
+  }
+  return rows;
+}
+
+// ── KPI CALCULATION ────────────────────────────────────────────────
+function deriveKPIs(rows) {
+  const lastRow    = rows[rows.length - 1];
+  const currentGen = lastRow.actual;
+  const totalSched = rows.reduce((s, r) => s + r.scheduled, 0);
+  const totalNet   = rows.reduce((s, r) => s + r.netRev, 0);
+  const totalPenalty = rows.reduce((s, r) => s + r.penalty, 0);
+
+  // Forecast accuracy = 100 - mean absolute percentage error
+  const mape = rows.reduce((s, r) => {
+    return s + Math.abs((r.forecast - r.actual) / r.actual) * 100;
+  }, 0) / rows.length;
+  const accuracy = +(100 - mape).toFixed(1);
+
+  const penaltyAvoided = PENALTY_NO_AI - totalPenalty;
+
+  return { currentGen, accuracy, totalSched, totalNet, totalPenalty, penaltyAvoided };
+}
+
+// ── REVENUE BY CONSUMER ────────────────────────────────────────────
+function revenueByConsumer(rows) {
+  const map = {};
+  CONSUMERS.forEach(c => map[c.type] = 0);
+  rows.forEach(r => { map[r.consumer.type] = (map[r.consumer.type] || 0) + r.netRev; });
+  return map;
+}
+
+// ── RENDER TABLE ───────────────────────────────────────────────────
+function renderTable(rows) {
+  const tbody = document.getElementById('table-body');
+  const tfoot = document.getElementById('table-foot');
+
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td><strong>${r.block}</strong></td>
+      <td>${r.forecast.toFixed(2)}</td>
+      <td>${r.scheduled.toFixed(2)}</td>
+      <td>${r.actual.toFixed(2)}</td>
+      <td class="${r.deviation >= 0 ? 'deviation-pos' : 'deviation-neg'}">
+        ${r.deviation >= 0 ? '+' : ''}${r.deviation.toFixed(3)}
+      </td>
+      <td><span class="pill ${r.consumer.pill}">${r.consumer.type}</span></td>
+      <td>₹${r.tariff.toFixed(2)}</td>
+      <td class="revenue-val">${fmtINR(r.grossRev)}</td>
+      <td class="penalty-val">${fmtINR(r.penalty)}</td>
+      <td class="revenue-val">${fmtINR(r.netRev)}</td>
+    </tr>
+  `).join('');
+
+  const totGross   = rows.reduce((s,r)=>s+r.grossRev,0);
+  const totPenalty = rows.reduce((s,r)=>s+r.penalty,0);
+  const totNet     = rows.reduce((s,r)=>s+r.netRev,0);
+  const totActual  = rows.reduce((s,r)=>s+r.actual,0);
+  const totSched   = rows.reduce((s,r)=>s+r.scheduled,0);
+  const totFcast   = rows.reduce((s,r)=>s+r.forecast,0);
+
+  tfoot.innerHTML = `
+    <tr>
+      <td>TOTAL</td>
+      <td>${totFcast.toFixed(2)}</td>
+      <td>${totSched.toFixed(2)}</td>
+      <td>${totActual.toFixed(2)}</td>
+      <td>—</td>
+      <td>—</td>
+      <td>—</td>
+      <td class="revenue-val">${fmtINR(totGross)}</td>
+      <td class="penalty-val">${fmtINR(totPenalty)}</td>
+      <td class="revenue-val">${fmtINR(totNet)}</td>
+    </tr>
+  `;
+}
+
+// ── RENDER KPI CARDS ───────────────────────────────────────────────
+function renderKPIs(kpis, rows) {
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = val; el.classList.remove('counting'); void el.offsetWidth; el.classList.add('counting'); }
+  };
+
+  set('kpi-generation', kpis.currentGen.toFixed(1) + ' MW');
+  set('kpi-accuracy', kpis.accuracy + '%');
+  set('kpi-scheduled', kpis.totalSched.toFixed(1) + ' MWh');
+  set('kpi-revenue', fmtINR(kpis.totalNet));
+  set('kpi-avoided', fmtINR(Math.max(0, kpis.penaltyAvoided)));
+
+  // Deltas
+  const capUtil = ((kpis.currentGen / CAPACITY_MW) * 100).toFixed(1);
+  document.getElementById('kpi-generation-delta').textContent = `▲ ${capUtil}% of capacity`;
+  document.getElementById('kpi-accuracy-delta').textContent   = `▲ +${(kpis.accuracy - 82).toFixed(1)}pp vs baseline`;
+  document.getElementById('kpi-revenue-delta').textContent    = `▲ Net of ₹${Math.round(rows.reduce((s,r)=>s+r.penalty,0)).toLocaleString('en-IN')} penalties`;
+
+  // Penalty section
+  set('penalty-accuracy-val', kpis.accuracy + '%');
+  set('penalty-ai-val', fmtINR(kpis.totalPenalty));
+  set('saved-val', fmtINR(Math.max(0, kpis.penaltyAvoided)));
+
+  // Progress bars
+  document.getElementById('progress-ai-pct').textContent  = kpis.accuracy + '%';
+  document.getElementById('progress-ai-pct2').textContent = kpis.accuracy + '%';
+  document.getElementById('progress-ai-bar').style.width  = kpis.accuracy + '%';
+}
+
+// ── CHARTS ─────────────────────────────────────────────────────────
+function initCharts(rows) {
+  const labels   = rows.map(r => r.block.split('–')[0]);
+  const forecast = rows.map(r => r.forecast);
+  const scheduled= rows.map(r => r.scheduled);
+  const actual   = rows.map(r => r.actual);
+
+  // Destroy old
+  if (lineChart) lineChart.destroy();
+  if (barChart)  barChart.destroy();
+
+  // ── Line Chart ──
+  const lineCtx = document.getElementById('lineChart').getContext('2d');
+  lineChart = new Chart(lineCtx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'AI Forecast',
+          data: forecast,
+          borderColor: '#6366F1',
+          backgroundColor: 'rgba(99,102,241,.08)',
+          borderWidth: 2,
+          tension: 0.4,
+          fill: false,
+          pointRadius: 4,
+          pointBackgroundColor: '#6366F1',
+        },
+        {
+          label: 'Scheduled',
+          data: scheduled,
+          borderColor: '#F59E0B',
+          backgroundColor: 'rgba(245,158,11,.08)',
+          borderWidth: 2,
+          borderDash: [5,3],
+          tension: 0.4,
+          fill: false,
+          pointRadius: 3,
+          pointBackgroundColor: '#F59E0B',
+        },
+        {
+          label: 'Actual Generation',
+          data: actual,
+          borderColor: '#22C55E',
+          backgroundColor: 'rgba(34,197,94,.1)',
+          borderWidth: 2.5,
+          tension: 0.4,
+          fill: true,
+          pointRadius: 4,
+          pointBackgroundColor: '#22C55E',
+        },
+      ],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { font: { size: 11 }, boxWidth: 16, usePointStyle: true } },
+        tooltip: { mode: 'index', intersect: false, bodyFont: { size: 11 } },
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 30 } },
+        y: {
+          title: { display: true, text: 'Energy (MWh)', font: { size: 11 } },
+          grid: { color: 'rgba(0,0,0,.05)' },
+          ticks: { font: { size: 10 } },
+        },
+      },
+      interaction: { mode: 'index', intersect: false },
+    },
+  });
+
+  // ── Bar Chart ──
+  const revMap = revenueByConsumer(rows);
+  const consumerLabels = Object.keys(revMap);
+  const consumerRevs   = Object.values(revMap);
+  const barColors = ['#3B82F6','#8B5CF6','#22C55E','#F59E0B'];
+
+  const barCtx = document.getElementById('barChart').getContext('2d');
+  barChart = new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: consumerLabels,
+      datasets: [{
+        label: 'Net Revenue (₹)',
+        data: consumerRevs,
+        backgroundColor: barColors.map(c => c + 'CC'),
+        borderColor: barColors,
+        borderWidth: 2,
+        borderRadius: 6,
+      }],
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' ₹' + Math.round(ctx.parsed.y).toLocaleString('en-IN'),
+          },
+          bodyFont: { size: 11 },
+        },
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: {
+          title: { display: true, text: 'Net Revenue (₹)', font: { size: 11 } },
+          grid: { color: 'rgba(0,0,0,.05)' },
+          ticks: {
+            font: { size: 10 },
+            callback: v => '₹' + (v/1000).toFixed(0) + 'K',
+          },
+        },
+      },
+    },
+  });
+}
+
+// ── MAIN SIMULATION ────────────────────────────────────────────────
+function refreshSimulation() {
+  const btn  = document.querySelector('.refresh-btn');
+  const icon = document.getElementById('refresh-icon');
+  btn.disabled = true;
+  icon.style.display = 'inline-block';
+  icon.style.animation = 'spin .6s linear infinite';
+
+  // Small delay for UX feedback
+  setTimeout(() => {
+    const rows = generateTableData();
+    const kpis = deriveKPIs(rows);
+
+    renderTable(rows);
+    renderKPIs(kpis, rows);
+    initCharts(rows);
+
+    const now = new Date();
+    document.getElementById('last-updated').textContent =
+      'Updated ' + now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    btn.disabled = false;
+    icon.style.animation = '';
+  }, 350);
+}
+
+// ── SPIN ANIMATION ─────────────────────────────────────────────────
+const styleEl = document.createElement('style');
+styleEl.textContent = '@keyframes spin { to { transform: rotate(360deg); } }';
+document.head.appendChild(styleEl);
+
+// ── INITIAL LOAD ───────────────────────────────────────────────────
+refreshSimulation();
+</script>
+</body>
+</html>
