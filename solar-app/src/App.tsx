@@ -13,6 +13,7 @@ import { DataQualityPage } from './components/DataQualityPage';
 import { AIRecommendationsPage } from './components/AIRecommendationsPage';
 import { FormulaAuditPage } from './components/FormulaAuditPage';
 import { AssumptionsPage } from './components/AssumptionsPage';
+import { CopilotPanel } from './components/CopilotPanel';
 
 const TAB_ORDER: TabId[] = [
   'upload','overview','forecasting','revenue','deviation',
@@ -153,6 +154,9 @@ export default function App() {
         Auto-detects column meanings &nbsp;·&nbsp;
         All formulas auditable
       </footer>
+
+      {/* ── AI COPILOT ── */}
+      <CopilotPanel />
     </div>
   );
 }

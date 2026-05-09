@@ -4,6 +4,7 @@ import { parseFile, getSheetKey } from '../utils/fileParser';
 import { CANONICAL_LABELS, REQUIRED_FIELDS, type CanonicalField } from '../types';
 import { DATASET_TYPE_LABELS } from '../types';
 import { Card, SectionLabel, EmptyState } from './shared/Card';
+import { buildDemoSheets, DEMO_META } from '../data/demoDatasets';
 
 const ALL_CANONICAL: CanonicalField[] = Object.keys(CANONICAL_LABELS) as CanonicalField[];
 
@@ -16,6 +17,18 @@ export const UploadPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleDemo = useCallback(() => {
+    setLoading(true); setError(null);
+    try {
+      const sheets = buildDemoSheets();
+      addSheets(sheets);
+    } catch (e) {
+      setError(`Demo data error: ${String(e)}`);
+    } finally {
+      setLoading(false);
+    }
+  }, [addSheets]);
 
   const handleFiles = useCallback(async (files: FileList | null) => {
     if (!files || !files.length) return;
@@ -85,6 +98,23 @@ export const UploadPage: React.FC = () => {
         <div className="text-xs text-slate-400">Supports CSV · XLSX · XLS · ZIP (any column names — auto-detected)</div>
         {error && <div className="mt-3 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 inline-block">{error}</div>}
       </div>
+
+      {/* Demo data card */}
+      {sheets.length === 0 && !loading && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-bold text-amber-800 mb-0.5">✨ {DEMO_META.title}</div>
+            <div className="text-xs text-amber-700 mb-0.5">{DEMO_META.stats}</div>
+            <div className="text-xs text-amber-600">{DEMO_META.description}</div>
+          </div>
+          <button
+            onClick={handleDemo}
+            className="shrink-0 px-5 py-2.5 rounded-lg text-sm font-bold bg-amber-500 hover:bg-amber-600 text-white transition-colors shadow-sm"
+          >
+            Try Sample Data →
+          </button>
+        </div>
+      )}
 
       {sheets.length > 0 && (
         <>
