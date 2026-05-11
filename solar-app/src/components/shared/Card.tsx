@@ -3,7 +3,7 @@ import React from 'react';
 interface CardProps {
   title?: React.ReactNode;
   subtitle?: React.ReactNode;
-  icon?: string;
+  icon?: React.ReactNode;
   iconBg?: string;
   action?: React.ReactNode;
   children: React.ReactNode;
@@ -16,7 +16,11 @@ export const Card: React.FC<CardProps> = ({ title, subtitle, icon, iconBg = 'bg-
     {(title || action) && (
       <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-100">
         <div className="flex items-center gap-3">
-          {icon && <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-lg ${iconBg}`}>{icon}</div>}
+          {icon && (
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${iconBg}`}>
+              {icon}
+            </div>
+          )}
           <div>
             <div className="text-sm font-bold text-slate-800">{title}</div>
             {subtitle && <div className="text-xs text-slate-400 mt-0.5">{subtitle}</div>}
@@ -30,7 +34,7 @@ export const Card: React.FC<CardProps> = ({ title, subtitle, icon, iconBg = 'bg-
 );
 
 interface KPICardProps {
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   value: React.ReactNode;
   sub?: string;
@@ -40,12 +44,12 @@ interface KPICardProps {
 }
 
 const COLOR_MAP = {
-  blue:   { bar: 'bg-blue-500', bg: 'bg-blue-50', text: 'text-blue-700' },
-  green:  { bar: 'bg-green-500', bg: 'bg-green-50', text: 'text-green-700' },
-  amber:  { bar: 'bg-amber-500', bg: 'bg-amber-50', text: 'text-amber-700' },
-  red:    { bar: 'bg-red-500', bg: 'bg-red-50', text: 'text-red-700' },
-  purple: { bar: 'bg-purple-500', bg: 'bg-purple-50', text: 'text-purple-700' },
-  teal:   { bar: 'bg-teal-500', bg: 'bg-teal-50', text: 'text-teal-700' },
+  blue:   { bar: 'bg-blue-500',   bg: 'bg-blue-50',   text: 'text-blue-600' },
+  green:  { bar: 'bg-green-500',  bg: 'bg-green-50',  text: 'text-green-600' },
+  amber:  { bar: 'bg-amber-500',  bg: 'bg-amber-50',  text: 'text-amber-600' },
+  red:    { bar: 'bg-red-500',    bg: 'bg-red-50',    text: 'text-red-600' },
+  purple: { bar: 'bg-purple-500', bg: 'bg-purple-50', text: 'text-purple-600' },
+  teal:   { bar: 'bg-teal-500',   bg: 'bg-teal-50',   text: 'text-teal-600' },
 };
 
 export const KPICard: React.FC<KPICardProps> = ({ icon, label, value, sub, color = 'blue', tooltip, missing }) => {
@@ -55,7 +59,9 @@ export const KPICard: React.FC<KPICardProps> = ({ icon, label, value, sub, color
       <div className={`h-1 ${c.bar}`} />
       <div className="p-4">
         <div className="flex items-center justify-between mb-2">
-          <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-xl ${c.bg}`}>{icon}</div>
+          <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${c.bg} ${c.text}`}>
+            {icon}
+          </div>
           {tooltip && (
             <div className="relative">
               <span className="w-4 h-4 rounded-full bg-slate-200 text-slate-500 text-[9px] font-bold flex items-center justify-center cursor-help">?</span>
@@ -88,9 +94,9 @@ export const Badge: React.FC<{ severity: 'critical' | 'warning' | 'info' }> = ({
   return <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${map[severity]}`}>{severity}</span>;
 };
 
-export const EmptyState: React.FC<{ icon?: string; message: string; sub?: string }> = ({ icon = '📭', message, sub }) => (
+export const EmptyState: React.FC<{ icon?: React.ReactNode; message: string; sub?: string }> = ({ icon, message, sub }) => (
   <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
-    <div className="text-4xl">{icon}</div>
+    {icon && <div className="text-slate-300">{icon}</div>}
     <div className="font-semibold text-slate-600">{message}</div>
     {sub && <div className="text-sm text-slate-400 max-w-xs">{sub}</div>}
   </div>

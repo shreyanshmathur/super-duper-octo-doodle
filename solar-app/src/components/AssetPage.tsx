@@ -1,4 +1,5 @@
 import React from 'react';
+import { Wrench, AlertOctagon, BarChart2, TrendingDown, ClipboardList } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { EmptyState, Card, KPICard, Badge } from './shared/Card';
 import { fmtINR, fmtPct, fmtMWh } from './shared/formatters';
@@ -7,7 +8,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 export const AssetPage: React.FC = () => {
   const { assetRows } = useAppStore();
 
-  if (!assetRows.length) return <EmptyState icon="🔧" message="No asset health data" sub="Upload a file with asset/inverter status columns to enable this tab." />;
+  if (!assetRows.length) return <EmptyState icon={<Wrench size={48} />} message="No asset health data" sub="Upload a file with asset/inverter status columns to enable this tab." />;
 
   const byAsset: Record<string, { energy: number; availability: number[]; status: string; faults: string[]; leakage: number }> = {};
   assetRows.forEach(r => {
@@ -42,14 +43,14 @@ export const AssetPage: React.FC = () => {
   return (
     <div className="space-y-6 fade-in">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KPICard icon="🔧" label="Total Assets" value={assets.length.toString()} color="blue" />
-        <KPICard icon="⛔" label="Faulted Assets" value={faulted.toString()} color={faulted ? 'red' : 'green'} />
-        <KPICard icon="📊" label="Avg Availability" value={fmtPct(avgAvail)} color={avgAvail > 90 ? 'green' : 'amber'} />
-        <KPICard icon="💸" label="Est. Revenue Leakage" value={totalLeakage ? fmtINR(totalLeakage, true) : '—'} color={totalLeakage > 0 ? 'red' : 'green'} />
+        <KPICard icon={<Wrench size={18} />} label="Total Assets" value={assets.length.toString()} color="blue" />
+        <KPICard icon={<AlertOctagon size={18} />} label="Faulted Assets" value={faulted.toString()} color={faulted ? 'red' : 'green'} />
+        <KPICard icon={<BarChart2 size={18} />} label="Avg Availability" value={fmtPct(avgAvail)} color={avgAvail > 90 ? 'green' : 'amber'} />
+        <KPICard icon={<TrendingDown size={18} />} label="Est. Revenue Leakage" value={totalLeakage ? fmtINR(totalLeakage, true) : '—'} color={totalLeakage > 0 ? 'red' : 'green'} />
       </div>
 
       {/* Availability chart */}
-      <Card title="Asset Availability (%)" icon="📊" iconBg="bg-green-50" subtitle="Average availability per asset">
+      <Card title="Asset Availability (%)" icon={<BarChart2 size={15} className="text-green-600" />} iconBg="bg-green-50" subtitle="Average availability per asset">
         <ResponsiveContainer width="100%" height={200}>
           <BarChart data={barData} margin={{ right: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -64,7 +65,7 @@ export const AssetPage: React.FC = () => {
       </Card>
 
       {/* Asset table */}
-      <Card title="Asset Status Table" icon="📋" iconBg="bg-blue-50">
+      <Card title="Asset Status Table" icon={<ClipboardList size={15} className="text-blue-600" />} iconBg="bg-blue-50">
         <div className="overflow-x-auto">
           <table className="w-full text-xs border-collapse">
             <thead>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Target, TrendingDown, Ruler, Activity, Zap, Cloud, CheckCircle2, TrendingUp } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { EmptyState, Card, KPICard } from './shared/Card';
 import { fmtPct, fmtMWh, fmtNum, CHART_COLORS } from './shared/formatters';
@@ -14,8 +15,8 @@ export const ForecastingPage: React.FC = () => {
   const hasForecast = intervalRows.some(r => r.forecastEnergyMwh !== null);
   const hasLegacy = intervalRows.some(r => r.legacyForecastEnergyMwh !== null);
 
-  if (!intervalRows.length) return <EmptyState icon="📈" message="No data loaded" sub="Upload a dataset with generation data." />;
-  if (!hasForecast) return <EmptyState icon="🎯" message="No forecast data available" sub="Map the 'AI Forecast Energy (MWh)' column to enable this tab." />;
+  if (!intervalRows.length) return <EmptyState icon={<Target size={48} />} message="No data loaded" sub="Upload a dataset with generation data." />;
+  if (!hasForecast) return <EmptyState icon={<Target size={48} />} message="No forecast data available" sub="Map the 'AI Forecast Energy (MWh)' column to enable this tab." />;
 
   const accuracy = calcMAPE(intervalRows);
   const legacyAcc = calcLegacyMAPE(intervalRows);
@@ -44,15 +45,15 @@ export const ForecastingPage: React.FC = () => {
   return (
     <div className="space-y-6 fade-in">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KPICard icon="🎯" label="AI Forecast Accuracy" value={fmtPct(accuracy)} color="green" tooltip="100 − MAPE" />
-        <KPICard icon="📉" label="Legacy Forecast Accuracy" value={legacyAcc !== null ? fmtPct(legacyAcc) : undefined} missing={!hasLegacy ? 'legacy_forecast_energy_mwh' : undefined} color="amber" />
-        <KPICard icon="📏" label="Mean Abs Error (MAE)" value={mae !== null ? fmtMWh(mae) : '—'} color="blue" tooltip="Average absolute difference between forecast and actual per block." />
-        <KPICard icon="📐" label="Root Mean Sq Error (RMSE)" value={rmse !== null ? fmtNum(rmse, 3) + ' MWh' : '—'} color="purple" tooltip="Root mean squared error between forecast and actual." />
+        <KPICard icon={<Target size={18} />} label="AI Forecast Accuracy" value={fmtPct(accuracy)} color="green" tooltip="100 − MAPE" />
+        <KPICard icon={<TrendingDown size={18} />} label="Legacy Forecast Accuracy" value={legacyAcc !== null ? fmtPct(legacyAcc) : undefined} missing={!hasLegacy ? 'legacy_forecast_energy_mwh' : undefined} color="amber" />
+        <KPICard icon={<Ruler size={18} />} label="Mean Abs Error (MAE)" value={mae !== null ? fmtMWh(mae) : '—'} color="blue" tooltip="Average absolute difference between forecast and actual per block." />
+        <KPICard icon={<Activity size={18} />} label="Root Mean Sq Error (RMSE)" value={rmse !== null ? fmtNum(rmse, 3) + ' MWh' : '—'} color="purple" tooltip="Root mean squared error between forecast and actual." />
       </div>
 
       {/* Accuracy comparison bar */}
       {legacyAcc !== null && accuracy !== null && (
-        <Card title="Accuracy Improvement vs Legacy" icon="🆚" iconBg="bg-indigo-50">
+        <Card title="Accuracy Improvement vs Legacy" icon={<TrendingUp size={15} className="text-indigo-600" />} iconBg="bg-indigo-50">
           <div className="space-y-3">
             {[
               { label: 'Legacy Forecasting', value: legacyAcc, color: 'bg-red-400' },
@@ -68,15 +69,15 @@ export const ForecastingPage: React.FC = () => {
                 </div>
               </div>
             ))}
-            <div className="text-xs text-green-700 font-semibold bg-green-50 rounded-lg px-3 py-2 mt-2">
-              ✅ AI improved accuracy by {fmtPct(accuracy - legacyAcc)} — estimated penalty saving: ₹{Math.round((accuracy - legacyAcc) * 5000).toLocaleString('en-IN')}/day
+            <div className="flex items-center gap-2 text-xs text-green-700 font-semibold bg-green-50 rounded-lg px-3 py-2 mt-2">
+              <CheckCircle2 size={13} className="shrink-0" /> AI improved accuracy by {fmtPct(accuracy - legacyAcc)} — estimated penalty saving: ₹{Math.round((accuracy - legacyAcc) * 5000).toLocaleString('en-IN')}/day
             </div>
           </div>
         </Card>
       )}
 
       {/* Forecast vs Actual line chart */}
-      <Card title="AI Forecast vs Actual Generation" icon="📈" iconBg="bg-blue-50" subtitle="Per 15-minute block (MWh)">
+      <Card title="AI Forecast vs Actual Generation" icon={<Target size={15} className="text-blue-600" />} iconBg="bg-blue-50" subtitle="Per 15-minute block (MWh)">
         <ResponsiveContainer width="100%" height={280}>
           <LineChart data={chartData} margin={{ right: 16 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -92,7 +93,7 @@ export const ForecastingPage: React.FC = () => {
       </Card>
 
       {/* Error chart */}
-      <Card title="Forecast Error per Block (MWh)" icon="⚡" iconBg="bg-red-50" subtitle="Positive = over-forecast, Negative = under-forecast">
+      <Card title="Forecast Error per Block (MWh)" icon={<Zap size={15} className="text-red-500" />} iconBg="bg-red-50" subtitle="Positive = over-forecast, Negative = under-forecast">
         <ResponsiveContainer width="100%" height={200}>
           <AreaChart data={chartData} margin={{ right: 16 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -107,7 +108,7 @@ export const ForecastingPage: React.FC = () => {
 
       {/* Weather correlation */}
       {weatherChart.length > 0 && (
-        <Card title="Weather vs Forecast Correlation" icon="🌤️" iconBg="bg-sky-50" subtitle="Irradiance and cloud cover vs AI forecast generation">
+        <Card title="Weather vs Forecast Correlation" icon={<Cloud size={15} className="text-sky-500" />} iconBg="bg-sky-50" subtitle="Irradiance and cloud cover vs AI forecast generation">
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={weatherChart} margin={{ right: 16 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />

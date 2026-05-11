@@ -1,4 +1,9 @@
 import React from 'react';
+import {
+  Sun, Upload, LayoutDashboard, Target, IndianRupee, Zap, Users,
+  Wrench, ShieldAlert, ClipboardCheck, Sparkles, FileSearch,
+  SlidersHorizontal, RotateCcw,
+} from 'lucide-react';
 import { useAppStore } from './store/appStore';
 import { TAB_LABELS, type TabId } from './types';
 import { UploadPage } from './components/UploadPage';
@@ -36,13 +41,21 @@ const PAGE_MAP: Record<TabId, React.ComponentType> = {
   assumptions: AssumptionsPage,
 };
 
-const TAB_ICONS: Record<TabId, string> = {
-  upload:'☁️', overview:'📊', forecasting:'🎯', revenue:'💰', deviation:'⚡',
-  consumer:'🏭', asset:'🔧', edge_cases:'⛔', data_quality:'✅',
-  ai_recommendations:'🤖', formula_audit:'🔍', assumptions:'⚙️',
+const TAB_ICONS: Record<TabId, React.ReactNode> = {
+  upload:             <Upload size={15} />,
+  overview:           <LayoutDashboard size={15} />,
+  forecasting:        <Target size={15} />,
+  revenue:            <IndianRupee size={15} />,
+  deviation:          <Zap size={15} />,
+  consumer:           <Users size={15} />,
+  asset:              <Wrench size={15} />,
+  edge_cases:         <ShieldAlert size={15} />,
+  data_quality:       <ClipboardCheck size={15} />,
+  ai_recommendations: <Sparkles size={15} />,
+  formula_audit:      <FileSearch size={15} />,
+  assumptions:        <SlidersHorizontal size={15} />,
 };
 
-// Short labels shown on narrow screens (icon + very short text)
 const TAB_SHORT: Record<TabId, string> = {
   upload:'Upload', overview:'Overview', forecasting:'Forecast', revenue:'Revenue',
   deviation:'Deviation', consumer:'Consumer', asset:'Assets', edge_cases:'Edge Cases',
@@ -66,9 +79,9 @@ export default function App() {
           <div className="flex items-center justify-between gap-3 pb-3">
             {/* Brand */}
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <div className="w-9 h-9 sm:w-11 sm:h-11 shrink-0 rounded-xl flex items-center justify-center text-xl sm:text-2xl"
+              <div className="w-9 h-9 sm:w-11 sm:h-11 shrink-0 rounded-xl flex items-center justify-center text-amber-300"
                 style={{ background: 'rgba(255,255,255,.15)' }}>
-                ☀️
+                <Sun size={22} />
               </div>
               <div className="min-w-0">
                 <div className="text-white font-bold leading-tight truncate text-sm sm:text-base lg:text-[17px]">
@@ -93,16 +106,16 @@ export default function App() {
               )}
               <button
                 onClick={reset}
-                className="text-white text-xs font-semibold rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 transition-opacity hover:opacity-80 active:opacity-60"
+                className="flex items-center gap-1.5 text-white text-xs font-semibold rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 transition-opacity hover:opacity-80 active:opacity-60"
                 style={{ background:'rgba(255,255,255,.15)', border:'1px solid rgba(255,255,255,.3)' }}
               >
-                <span className="hidden sm:inline">↺ Reset</span>
-                <span className="sm:hidden">↺</span>
+                <RotateCcw size={13} />
+                <span className="hidden sm:inline">Reset</span>
               </button>
             </div>
           </div>
 
-          {/* Tab bar — horizontally scrollable, hides scrollbar */}
+          {/* Tab bar */}
           <div
             className="flex gap-0 overflow-x-auto pb-0"
             style={{ scrollbarWidth:'none', WebkitOverflowScrolling:'touch' }}
@@ -127,11 +140,11 @@ export default function App() {
                     cursor: locked ? 'not-allowed' : 'pointer',
                     whiteSpace: 'nowrap',
                     fontFamily: 'inherit',
-                    minWidth: 44,  // WCAG touch target
+                    minWidth: 44,
                     minHeight: 44,
                   }}
                 >
-                  <span className="text-base sm:text-sm leading-none">{TAB_ICONS[tab]}</span>
+                  <span className="leading-none">{TAB_ICONS[tab]}</span>
                   <span className="text-[10px] sm:text-[11px] leading-tight">
                     {TAB_SHORT[tab]}
                   </span>

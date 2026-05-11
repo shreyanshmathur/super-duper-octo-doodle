@@ -1,25 +1,39 @@
 import React, { useState } from 'react';
+import { CheckCircle2, XCircle, AlertTriangle, Minus, ClipboardList, Search } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { EmptyState, Card } from './shared/Card';
 import { buildFormulaAudit } from '../utils/dataTransform';
-import { fmtINR, fmtMWh, fmtNum } from './shared/formatters';
+import { fmtINR, fmtNum } from './shared/formatters';
+
+const STATUS_STYLE = {
+  pass:    'bg-green-100 text-green-700',
+  fail:    'bg-red-100 text-red-700',
+  warning: 'bg-amber-100 text-amber-700',
+  na:      'bg-slate-100 text-slate-500',
+};
+
+const STATUS_ICON: Record<string, React.ReactNode> = {
+  pass:    <CheckCircle2 size={11} />,
+  fail:    <XCircle size={11} />,
+  warning: <AlertTriangle size={11} />,
+  na:      <Minus size={11} />,
+};
 
 export const FormulaAuditPage: React.FC = () => {
   const { intervalRows } = useAppStore();
   const [selected, setSelected] = useState<number | null>(null);
   const [filter, setFilter] = useState<'all' | 'pass' | 'fail' | 'na'>('all');
 
-  if (!intervalRows.length) return <EmptyState icon="🔍" message="No data loaded" />;
+  if (!intervalRows.length) return <EmptyState icon={<Search size={48} />} message="No data loaded" />;
 
   const audit = buildFormulaAudit(intervalRows);
   const filtered = audit.filter(a => filter === 'all' || a.status === filter);
-
-  const stats = { pass: audit.filter(a => a.status === 'pass').length, fail: audit.filter(a => a.status === 'fail').length, na: audit.filter(a => a.status === 'na').length };
-
+  const stats = {
+    pass: audit.filter(a => a.status === 'pass').length,
+    fail: audit.filter(a => a.status === 'fail').length,
+    na:   audit.filter(a => a.status === 'na').length,
+  };
   const selectedEntry = selected !== null ? filtered[selected] : null;
-
-  const STATUS_STYLE = { pass: 'bg-green-100 text-green-700', fail: 'bg-red-100 text-red-700', warning: 'bg-amber-100 text-amber-700', na: 'bg-slate-100 text-slate-500' };
-  const STATUS_ICON = { pass: '✅', fail: '❌', warning: '⚠️', na: '—' };
 
   return (
     <div className="space-y-6 fade-in">
@@ -59,8 +73,7 @@ export const FormulaAuditPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Table */}
-        <Card title="Formula Audit Log" icon="📋" noPad>
+        <Card title="Formula Audit Log" icon={<ClipboardList size={15} className="text-blue-600" />} noPad>
           <div className="overflow-x-auto max-h-[500px]">
             <table className="w-full text-xs border-collapse">
               <thead className="sticky top-0">
@@ -78,7 +91,7 @@ export const FormulaAuditPage: React.FC = () => {
                     <td className="px-3 py-2 text-slate-400 font-mono">{a.formula}</td>
                     <td className="px-3 py-2 font-mono text-slate-700">{a.calculatedValue !== null ? a.field.includes('₹') ? fmtINR(a.calculatedValue) : fmtNum(a.calculatedValue, 3) : '—'}</td>
                     <td className="px-3 py-2">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${STATUS_STYLE[a.status]}`}>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${STATUS_STYLE[a.status]}`}>
                         {STATUS_ICON[a.status]} {a.status.toUpperCase()}
                       </span>
                     </td>
@@ -90,8 +103,7 @@ export const FormulaAuditPage: React.FC = () => {
           </div>
         </Card>
 
-        {/* Detail panel */}
-        <Card title="Audit Detail" icon="🔍" iconBg="bg-blue-50">
+        <Card title="Audit Detail" icon={<Search size={15} className="text-blue-600" />} iconBg="bg-blue-50">
           {selectedEntry ? (
             <div className="space-y-4 text-sm fade-in">
               <div>
@@ -128,14 +140,12 @@ export const FormulaAuditPage: React.FC = () => {
                 </div>
               </div>
               <div className={`rounded-lg p-3 ${STATUS_STYLE[selectedEntry.status]}`}>
-                <span className="font-bold">{STATUS_ICON[selectedEntry.status]} {selectedEntry.status.toUpperCase()}</span>
+                <span className="font-bold inline-flex items-center gap-1">{STATUS_ICON[selectedEntry.status]} {selectedEntry.status.toUpperCase()}</span>
                 <div className="text-xs mt-1 opacity-80">{selectedEntry.reason}</div>
               </div>
             </div>
           ) : (
-            <div className="text-center py-12 text-slate-400 text-sm">
-              Click any row to view formula details.
-            </div>
+            <div className="text-center py-12 text-slate-400 text-sm">Click any row to view formula details.</div>
           )}
         </Card>
       </div>

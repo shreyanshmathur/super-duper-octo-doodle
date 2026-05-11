@@ -1,4 +1,8 @@
 import React, { useCallback, useRef, useState } from 'react';
+import {
+  CloudUpload, Loader2, FileText, X, CheckCircle2, XCircle,
+  ClipboardList, Eye, ListChecks, Link2, Sun, IndianRupee, Cloud, Wrench,
+} from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { parseFile, getSheetKey } from '../utils/fileParser';
 import { CANONICAL_LABELS, REQUIRED_FIELDS, type CanonicalField } from '../types';
@@ -21,8 +25,8 @@ export const UploadPage: React.FC = () => {
   const handleDemo = useCallback(() => {
     setLoading(true); setError(null);
     try {
-      const sheets = buildDemoSheets();
-      addSheets(sheets);
+      const demoSheets = buildDemoSheets();
+      addSheets(demoSheets);
     } catch (e) {
       setError(`Demo data error: ${String(e)}`);
     } finally {
@@ -35,7 +39,6 @@ export const UploadPage: React.FC = () => {
     setLoading(true); setError(null);
     const errors: string[] = [];
     try {
-      // Parse all files in parallel
       const results = await Promise.all(
         Array.from(files).map(async file => {
           try {
@@ -92,8 +95,15 @@ export const UploadPage: React.FC = () => {
         onClick={() => inputRef.current?.click()}
       >
         <input ref={inputRef} type="file" multiple accept=".csv,.xlsx,.xls,.zip" className="hidden" onChange={e => handleFiles(e.target.files)} />
-        <div className="text-4xl mb-3">{loading ? '⏳' : '☁️'}</div>
-        <div className="text-base font-semibold text-slate-700 mb-1">{loading ? 'Parsing files…' : 'Drag & drop files here — or click to browse'}</div>
+        <div className="flex justify-center mb-3">
+          {loading
+            ? <Loader2 size={40} className="text-blue-400 animate-spin" />
+            : <CloudUpload size={40} className={dragging ? 'text-blue-400' : 'text-slate-300'} />
+          }
+        </div>
+        <div className="text-base font-semibold text-slate-700 mb-1">
+          {loading ? 'Parsing files…' : 'Drag & drop files here — or click to browse'}
+        </div>
         <div className="text-sm text-slate-500 mb-1">Upload <strong>multiple CSV/Excel files at once</strong> — generation data, forecast, revenue, weather, asset health</div>
         <div className="text-xs text-slate-400">Supports CSV · XLSX · XLS · ZIP (any column names — auto-detected)</div>
         {error && <div className="mt-3 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 inline-block">{error}</div>}
@@ -103,7 +113,7 @@ export const UploadPage: React.FC = () => {
       {sheets.length === 0 && !loading && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-bold text-amber-800 mb-0.5">✨ {DEMO_META.title}</div>
+            <div className="text-sm font-bold text-amber-800 mb-0.5">{DEMO_META.title}</div>
             <div className="text-xs text-amber-700 mb-0.5">{DEMO_META.stats}</div>
             <div className="text-xs text-amber-600">{DEMO_META.description}</div>
           </div>
@@ -126,9 +136,13 @@ export const UploadPage: React.FC = () => {
               return (
                 <button key={key} onClick={() => setActiveSheet(key)}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'}`}>
-                  📄 {sh.fileName}{sh.sheetName !== 'Sheet1' ? ` › ${sh.sheetName}` : ''}
+                  <FileText size={12} />
+                  {sh.fileName}{sh.sheetName !== 'Sheet1' ? ` › ${sh.sheetName}` : ''}
                   <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${active ? 'bg-blue-700' : 'bg-slate-100 text-slate-500'}`}>{sh.rows}r × {sh.columns}c</span>
-                  <span onClick={e => { e.stopPropagation(); removeSheet(key); }} className="ml-1 text-slate-400 hover:text-red-500">×</span>
+                  <span onClick={e => { e.stopPropagation(); removeSheet(key); }}
+                    className="ml-1 text-slate-400 hover:text-red-500 flex items-center">
+                    <X size={12} />
+                  </span>
                 </button>
               );
             })}
@@ -138,7 +152,7 @@ export const UploadPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Left: file info + preview */}
               <div className="space-y-4">
-                <Card title="File Information" icon="📋">
+                <Card title="File Information" icon={<ClipboardList size={15} className="text-blue-600" />}>
                   <dl className="space-y-2 text-sm">
                     {[
                       ['File', activeSheet.fileName],
@@ -155,7 +169,7 @@ export const UploadPage: React.FC = () => {
                   </dl>
                 </Card>
 
-                <Card title="Data Preview" icon="👁️">
+                <Card title="Data Preview" icon={<Eye size={15} className="text-blue-600" />}>
                   <div className="overflow-x-auto">
                     <table className="text-[11px] border-collapse w-full">
                       <thead>
@@ -181,7 +195,7 @@ export const UploadPage: React.FC = () => {
                 </Card>
 
                 {/* Completion score */}
-                <Card title="Required Field Coverage" icon="✅">
+                <Card title="Required Field Coverage" icon={<ListChecks size={15} className="text-green-600" />} iconBg="bg-green-50">
                   <div className="flex items-center gap-3 mb-3">
                     <div className={`text-3xl font-bold ${completionScore >= 80 ? 'text-green-600' : completionScore >= 50 ? 'text-amber-600' : 'text-red-600'}`}>{completionScore}%</div>
                     <div className="text-xs text-slate-500">of required fields mapped</div>
@@ -193,7 +207,10 @@ export const UploadPage: React.FC = () => {
                     const found = activeMappings.some(m => m.canonicalField === f && m.available && m.confidence > 0);
                     return (
                       <div key={f} className="flex items-center gap-2 text-xs py-0.5">
-                        <span>{found ? '✅' : '❌'}</span>
+                        {found
+                          ? <CheckCircle2 size={14} className="text-green-500 shrink-0" />
+                          : <XCircle size={14} className="text-red-400 shrink-0" />
+                        }
                         <span className={found ? 'text-slate-600' : 'text-red-500'}>{CANONICAL_LABELS[f]}</span>
                       </div>
                     );
@@ -203,7 +220,7 @@ export const UploadPage: React.FC = () => {
 
               {/* Right: mapping table */}
               <div className="lg:col-span-2">
-                <Card title="Column Mapping — Review & Override" icon="🔗" subtitle="Auto-detected mappings with confidence scores. Override any mapping.">
+                <Card title="Column Mapping — Review & Override" icon={<Link2 size={15} className="text-blue-600" />} subtitle="Auto-detected mappings with confidence scores. Override any mapping.">
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs border-collapse">
                       <thead>
@@ -252,7 +269,7 @@ export const UploadPage: React.FC = () => {
 
           {/* Proceed button */}
           <div className="flex items-center justify-between bg-white rounded-xl border border-slate-200 px-6 py-4">
-            <div className="text-sm text-slate-500">{canProceed ? '✅ Ready to analyse. Click to generate dashboards.' : '⚠️ Map at least the Timestamp and Actual Generation fields to proceed.'}</div>
+            <div className="text-sm text-slate-500">{canProceed ? 'Ready to analyse. Click to generate dashboards.' : 'Map at least the Timestamp and Actual Generation fields to proceed.'}</div>
             <button
               onClick={commitMappings}
               disabled={!canProceed}
@@ -266,7 +283,7 @@ export const UploadPage: React.FC = () => {
 
       {sheets.length === 0 && !loading && (
         <div className="bg-white rounded-xl border border-slate-200 p-5 text-sm text-slate-600 mb-2">
-          <div className="font-bold text-slate-800 mb-2">📂 How multi-file upload works</div>
+          <div className="font-bold text-slate-800 mb-2">How multi-file upload works</div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
             <div className="bg-slate-50 rounded-lg p-3">
               <div className="font-semibold text-slate-700 mb-1">Step 1 — Upload any files</div>
@@ -287,15 +304,15 @@ export const UploadPage: React.FC = () => {
       {sheets.length === 0 && !loading && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            ['☀️', 'Generation Data', 'Actual, forecast, scheduled MWh per 15-min block'],
-            ['💰', 'Revenue Data', 'Tariff, gross & net revenue, settlement status'],
-            ['🌤️', 'Weather Data', 'Irradiance, cloud cover, temperature, GHI'],
-            ['🔧', 'Asset Health', 'Inverter status, availability, fault codes'],
+            [<Sun size={24} />, 'Generation Data', 'Actual, forecast, scheduled MWh per 15-min block'],
+            [<IndianRupee size={24} />, 'Revenue Data', 'Tariff, gross & net revenue, settlement status'],
+            [<Cloud size={24} />, 'Weather Data', 'Irradiance, cloud cover, temperature, GHI'],
+            [<Wrench size={24} />, 'Asset Health', 'Inverter status, availability, fault codes'],
           ].map(([icon, title, desc]) => (
-            <div key={title} className="bg-white rounded-xl border border-slate-200 p-4 text-center">
-              <div className="text-2xl mb-2">{icon}</div>
-              <div className="text-xs font-bold text-slate-700 mb-1">{title}</div>
-              <div className="text-[11px] text-slate-400">{desc}</div>
+            <div key={String(title)} className="bg-white rounded-xl border border-slate-200 p-4 text-center">
+              <div className="flex justify-center mb-2 text-slate-400">{icon}</div>
+              <div className="text-xs font-bold text-slate-700 mb-1">{String(title)}</div>
+              <div className="text-[11px] text-slate-400">{String(desc)}</div>
             </div>
           ))}
         </div>

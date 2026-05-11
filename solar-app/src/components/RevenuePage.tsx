@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { IndianRupee, AlertTriangle, TrendingUp, BarChart2, Users, TrendingDown, Activity, ClipboardList, Download, CheckCircle2, XCircle } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { EmptyState, Card, KPICard, SectionLabel } from './shared/Card';
 import { fmtINR, fmtMWh, fmtPct, consumerColor } from './shared/formatters';
@@ -23,8 +24,8 @@ export const RevenuePage: React.FC = () => {
   const hasTariff = intervalRows.some(r => r.tariff !== null);
   const hasConsumer = consumerRows.length > 0;
 
-  if (!intervalRows.length) return <EmptyState icon="💰" message="No data loaded" />;
-  if (!hasTariff) return <EmptyState icon="💰" message="Tariff data not available" sub="Map 'tariff_inr_per_kwh' to enable revenue calculations." />;
+  if (!intervalRows.length) return <EmptyState icon={<IndianRupee size={48} />} message="No data loaded" />;
+  if (!hasTariff) return <EmptyState icon={<IndianRupee size={48} />} message="Tariff data not available" sub="Map 'tariff_inr_per_kwh' to enable revenue calculations." />;
 
   const totalGross   = intervalRows.reduce((s, r) => s + (r.grossRevenue ?? 0), 0);
   const totalPenalty = intervalRows.reduce((s, r) => s + (r.deviationPenalty ?? 0), 0);
@@ -64,15 +65,15 @@ export const RevenuePage: React.FC = () => {
   return (
     <div className="space-y-6 fade-in">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KPICard icon="💵" label="Total Gross Revenue" value={fmtINR(totalGross, true)} color="teal" />
-        <KPICard icon="⚠️" label="Total Deviation Penalty" value={fmtINR(totalPenalty, true)} color="red" />
-        <KPICard icon="✅" label="Net Revenue" value={fmtINR(totalNet, true)} color="green" />
-        <KPICard icon="📊" label="Avg Tariff" value={`₹${avgTariff.toFixed(2)}/kWh`} color="blue" />
+        <KPICard icon={<IndianRupee size={18} />} label="Total Gross Revenue" value={fmtINR(totalGross, true)} color="teal" />
+        <KPICard icon={<AlertTriangle size={18} />} label="Total Deviation Penalty" value={fmtINR(totalPenalty, true)} color="red" />
+        <KPICard icon={<TrendingUp size={18} />} label="Net Revenue" value={fmtINR(totalNet, true)} color="green" />
+        <KPICard icon={<BarChart2 size={18} />} label="Avg Tariff" value={`₹${avgTariff.toFixed(2)}/kWh`} color="blue" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Consumer Revenue Bar */}
-        <Card title="Revenue by Consumer Type" icon="🏭" iconBg="bg-purple-50" subtitle="Gross revenue allocation (₹)">
+        <Card title="Revenue by Consumer Type" icon={<Users size={15} className="text-purple-600" />} iconBg="bg-purple-50" subtitle="Gross revenue allocation (₹)">
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={consumerData} margin={{ right: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -87,7 +88,7 @@ export const RevenuePage: React.FC = () => {
         </Card>
 
         {/* Pie */}
-        <Card title="Revenue Share" icon="🥧" iconBg="bg-green-50">
+        <Card title="Revenue Share" icon={<BarChart2 size={15} className="text-green-600" />} iconBg="bg-green-50">
           <div className="flex items-center gap-4">
             <ResponsiveContainer width="60%" height={200}>
               <PieChart>
@@ -111,7 +112,7 @@ export const RevenuePage: React.FC = () => {
       </div>
 
       {/* Revenue timeline */}
-      <Card title="Revenue Timeline — Gross vs Net vs Penalty" icon="📈" iconBg="bg-teal-50" subtitle="Per 15-minute block (₹)">
+      <Card title="Revenue Timeline — Gross vs Net vs Penalty" icon={<Activity size={15} className="text-teal-600" />} iconBg="bg-teal-50" subtitle="Per 15-minute block (₹)">
         <ResponsiveContainer width="100%" height={240}>
           <LineChart data={revenueTimeline} margin={{ right: 16 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -127,10 +128,10 @@ export const RevenuePage: React.FC = () => {
       </Card>
 
       {/* Detailed table */}
-      <Card title="Block-wise Revenue Detail" icon="📋" iconBg="bg-blue-50"
+      <Card title="Block-wise Revenue Detail" icon={<ClipboardList size={15} className="text-blue-600" />} iconBg="bg-blue-50"
         action={
           <button onClick={() => downloadCSV(tableRows.map(r => ({ Block: r.timeBlock, 'Actual MWh': r.actualEnergyMwh, 'Tariff ₹/kWh': r.tariff, 'Gross ₹': Math.round(r.grossRevenue ?? 0), 'Penalty ₹': Math.round(r.deviationPenalty ?? 0), 'Net ₹': Math.round(r.netRevenue ?? 0) })), 'revenue.csv')}
-          className="px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600 transition-all">⬇ Export CSV</button>
+          className="flex items-center gap-1 px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600 transition-all"><Download size={12} /> Export CSV</button>
         }>
         <div className="overflow-x-auto">
           <table className="w-full text-xs border-collapse">
@@ -151,7 +152,12 @@ export const RevenuePage: React.FC = () => {
                   <td className="px-3 py-1.5 text-right font-semibold text-red-600">{fmtINR(r.deviationPenalty)}</td>
                   <td className="px-3 py-1.5 text-right font-bold text-green-700">{fmtINR(r.netRevenue)}</td>
                   <td className="px-3 py-1.5 text-center">
-                    {r.dataQuality === 'error' ? <span className="text-red-500">❌</span> : r.dataQuality === 'warning' ? <span className="text-amber-500">⚠️</span> : <span className="text-green-500">✅</span>}
+                    {r.dataQuality === 'error'
+                      ? <XCircle size={14} className="text-red-500 mx-auto" />
+                      : r.dataQuality === 'warning'
+                        ? <AlertTriangle size={14} className="text-amber-500 mx-auto" />
+                        : <CheckCircle2 size={14} className="text-green-500 mx-auto" />
+                    }
                   </td>
                 </tr>
               ))}

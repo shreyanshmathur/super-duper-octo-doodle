@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Bot, X, Download, Settings, Trash2, Send, Square } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { buildContext, streamGroq, type ChatMessage } from '../utils/copilot';
 
@@ -115,7 +116,7 @@ export const CopilotPanel: React.FC = () => {
         className="fixed bottom-6 right-5 z-50 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all hover:scale-110 active:scale-95"
         style={{ background: 'linear-gradient(135deg,#1D4ED8,#7C3AED)', border: '2px solid rgba(255,255,255,.3)' }}
       >
-        {open ? '✕' : '🤖'}
+        {open ? <X size={22} /> : <Bot size={22} />}
       </button>
 
       {/* ── Panel ── */}
@@ -133,7 +134,7 @@ export const CopilotPanel: React.FC = () => {
           <div className="flex items-center justify-between px-4 py-3 shrink-0"
             style={{ background: 'linear-gradient(135deg,#1D4ED8,#7C3AED)' }}>
             <div className="flex items-center gap-2">
-              <span className="text-xl">🤖</span>
+              <Bot size={20} />
               <div>
                 <div className="text-white font-bold text-sm leading-tight">Solar AI Copilot</div>
                 <div className="text-[10px]" style={{ color: 'rgba(255,255,255,.6)' }}>
@@ -144,15 +145,15 @@ export const CopilotPanel: React.FC = () => {
             <div className="flex gap-1.5">
               {messages.length > 0 && (
                 <button onClick={exportMarkdown} title="Export chat" className="text-white opacity-70 hover:opacity-100 text-xs px-2 py-1 rounded-lg transition-opacity" style={{ background: 'rgba(255,255,255,.15)' }}>
-                  ↓ Export
+                  <Download size={12} /> Export
                 </button>
               )}
               <button onClick={() => setShowSettings(s => !s)} title="API key settings" className="text-white opacity-70 hover:opacity-100 text-xs px-2 py-1 rounded-lg transition-opacity" style={{ background: 'rgba(255,255,255,.15)' }}>
-                ⚙️
+                <Settings size={13} />
               </button>
               {messages.length > 0 && (
                 <button onClick={() => setMessages([])} title="Clear chat" className="text-white opacity-70 hover:opacity-100 text-xs px-2 py-1 rounded-lg transition-opacity" style={{ background: 'rgba(255,255,255,.15)' }}>
-                  🗑️
+                  <Trash2 size={13} />
                 </button>
               )}
             </div>
@@ -231,7 +232,7 @@ export const CopilotPanel: React.FC = () => {
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-xs text-red-700">
                 <span className="font-bold">Error: </span>{error}
-                {error.includes('401') && ' — Check your Groq API key in ⚙️ settings.'}
+                {error.includes('401') && ' — Check your Groq API key in settings.'}
               </div>
             )}
             <div ref={bottomRef} />
@@ -268,7 +269,7 @@ export const CopilotPanel: React.FC = () => {
                     : 'bg-slate-100 text-slate-300 cursor-not-allowed'
               }`}
             >
-              {streaming ? '⏹' : '↑'}
+              {streaming ? <Square size={16} /> : <Send size={16} />}
             </button>
           </div>
         </div>

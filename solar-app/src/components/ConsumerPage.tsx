@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Users, Zap, IndianRupee, TrendingUp, BarChart2, ClipboardList } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { EmptyState, Card, KPICard } from './shared/Card';
 import { fmtINR, fmtMWh, fmtPct, consumerColor } from './shared/formatters';
@@ -13,7 +14,7 @@ export const ConsumerPage: React.FC = () => {
   const hasConsumerData = consumerRows.length > 0;
   const useRows = hasConsumerData ? consumerRows : [];
 
-  if (!intervalRows.length && !consumerRows.length) return <EmptyState icon="🏭" message="No data loaded" />;
+  if (!intervalRows.length && !consumerRows.length) return <EmptyState icon={<Users size={48} />} message="No data loaded" />;
 
   // If no consumer rows, build a synthetic single-offtaker view from interval rows
   const allRows = hasConsumerData
@@ -67,14 +68,14 @@ export const ConsumerPage: React.FC = () => {
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KPICard icon="🏭" label="Consumer Segments" value={tableData.length.toString()} color="blue" />
-        <KPICard icon="⚡" label="Total Allocated Energy" value={fmtMWh(totalEnergy)} color="amber" />
-        <KPICard icon="💰" label="Total Revenue" value={fmtINR(totalRev, true)} color="green" />
-        <KPICard icon="🏆" label="Top Revenue Segment" value={topConsumer?.type ?? '—'} sub={topConsumer ? fmtINR(topConsumer.revenue, true) : undefined} color="purple" />
+        <KPICard icon={<Users size={18} />} label="Consumer Segments" value={tableData.length.toString()} color="blue" />
+        <KPICard icon={<Zap size={18} />} label="Total Allocated Energy" value={fmtMWh(totalEnergy)} color="amber" />
+        <KPICard icon={<IndianRupee size={18} />} label="Total Revenue" value={fmtINR(totalRev, true)} color="green" />
+        <KPICard icon={<TrendingUp size={18} />} label="Top Revenue Segment" value={topConsumer?.type ?? '—'} sub={topConsumer ? fmtINR(topConsumer.revenue, true) : undefined} color="purple" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card title="Revenue by Consumer" icon="💹" iconBg="bg-green-50" subtitle="Gross revenue per consumer type (₹)">
+        <Card title="Revenue by Consumer" icon={<IndianRupee size={15} className="text-green-600" />} iconBg="bg-green-50" subtitle="Gross revenue per consumer type (₹)">
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={barData} margin={{ right: 8 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -88,7 +89,7 @@ export const ConsumerPage: React.FC = () => {
           </ResponsiveContainer>
         </Card>
 
-        <Card title="Revenue Share" icon="🥧" iconBg="bg-purple-50">
+        <Card title="Revenue Share" icon={<BarChart2 size={15} className="text-purple-600" />} iconBg="bg-purple-50">
           <div className="flex items-center gap-4">
             <ResponsiveContainer width="60%" height={200}>
               <PieChart>
@@ -117,7 +118,7 @@ export const ConsumerPage: React.FC = () => {
       </div>
 
       {/* Consumer table */}
-      <Card title="Consumer Allocation Summary" icon="📋" iconBg="bg-blue-50">
+      <Card title="Consumer Allocation Summary" icon={<ClipboardList size={15} className="text-blue-600" />} iconBg="bg-blue-50">
         <div className="overflow-x-auto">
           <table className="w-full text-xs border-collapse">
             <thead>
@@ -138,7 +139,7 @@ export const ConsumerPage: React.FC = () => {
                   <td className="px-3 py-2 text-right text-slate-500">{d.blocks}</td>
                   <td className="px-3 py-2 text-right">
                     {d.avgTariff !== null && d.avgTariff < (tableData[0]?.avgTariff ?? 0) && (
-                      <span className="text-amber-600 text-[10px] font-semibold">Low tariff ⚠️</span>
+                      <span className="text-amber-600 text-[10px] font-semibold">Low tariff</span>
                     )}
                   </td>
                 </tr>

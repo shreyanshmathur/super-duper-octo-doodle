@@ -1,4 +1,5 @@
 import React from 'react';
+import { SlidersHorizontal, Ruler, FolderOpen } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { Card } from './shared/Card';
 import type { ModelAssumptions } from '../types';
@@ -13,16 +14,16 @@ interface FieldDef {
 }
 
 const FIELDS: FieldDef[] = [
-  { key: 'plantCapacityMw', label: 'Plant Capacity (MW)', type: 'number', unit: 'MW', step: 1 },
-  { key: 'blockDurationMin', label: 'Time Block Duration', type: 'number', unit: 'minutes', step: 5 },
-  { key: 'maxPhysicalGenMwh', label: 'Max Physical Generation per Block', type: 'number', unit: 'MWh', step: 0.5 },
-  { key: 'defaultPenaltyRate', label: 'Default Penalty Rate', type: 'number', unit: '₹/kWh', step: 0.05 },
-  { key: 'currency', label: 'Currency', type: 'select', options: ['₹', '$', '€', '£'] },
-  { key: 'energyUnit', label: 'Energy Unit', type: 'select', options: ['MWh', 'kWh', 'MU'] },
-  { key: 'tariffUnit', label: 'Tariff Unit', type: 'select', options: ['₹/kWh', '₹/MWh', '₹/unit'] },
-  { key: 'revenueUnit', label: 'Revenue Unit', type: 'select', options: ['₹', '₹ lakh', '₹ crore'] },
-  { key: 'formulaTolerance', label: 'Formula Reconciliation Tolerance', type: 'number', unit: 'fraction', step: 0.01 },
-  { key: 'allocationTolerance', label: 'Allocation Reconciliation Tolerance', type: 'number', unit: 'fraction', step: 0.01 },
+  { key: 'plantCapacityMw',    label: 'Plant Capacity (MW)',                    type: 'number', unit: 'MW',       step: 1 },
+  { key: 'blockDurationMin',   label: 'Time Block Duration',                    type: 'number', unit: 'minutes',  step: 5 },
+  { key: 'maxPhysicalGenMwh',  label: 'Max Physical Generation per Block',      type: 'number', unit: 'MWh',      step: 0.5 },
+  { key: 'defaultPenaltyRate', label: 'Default Penalty Rate',                   type: 'number', unit: '₹/kWh',    step: 0.05 },
+  { key: 'currency',           label: 'Currency',        type: 'select', options: ['₹', '$', '€', '£'] },
+  { key: 'energyUnit',         label: 'Energy Unit',     type: 'select', options: ['MWh', 'kWh', 'MU'] },
+  { key: 'tariffUnit',         label: 'Tariff Unit',     type: 'select', options: ['₹/kWh', '₹/MWh', '₹/unit'] },
+  { key: 'revenueUnit',        label: 'Revenue Unit',    type: 'select', options: ['₹', '₹ lakh', '₹ crore'] },
+  { key: 'formulaTolerance',   label: 'Formula Reconciliation Tolerance',       type: 'number', unit: 'fraction', step: 0.01 },
+  { key: 'allocationTolerance',label: 'Allocation Reconciliation Tolerance',    type: 'number', unit: 'fraction', step: 0.01 },
 ];
 
 export const AssumptionsPage: React.FC = () => {
@@ -34,7 +35,7 @@ export const AssumptionsPage: React.FC = () => {
         These assumptions affect all calculations across the dashboard. Changes take effect immediately.
       </div>
 
-      <Card title="Model Assumptions (Editable)" icon="⚙️" iconBg="bg-slate-50">
+      <Card title="Model Assumptions (Editable)" icon={<SlidersHorizontal size={15} className="text-slate-600" />} iconBg="bg-slate-50">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {FIELDS.map(f => (
             <div key={f.key} className="space-y-1.5">
@@ -64,17 +65,17 @@ export const AssumptionsPage: React.FC = () => {
         </div>
       </Card>
 
-      <Card title="Formula Reference" icon="📐" iconBg="bg-indigo-50">
+      <Card title="Formula Reference" icon={<Ruler size={15} className="text-indigo-600" />} iconBg="bg-indigo-50">
         <div className="space-y-3">
           {[
-            ['Deviation MWh', 'Actual Energy MWh − Scheduled Energy MWh'],
-            ['Absolute Deviation kWh', 'ABS(Deviation MWh) × 1000'],
-            ['Gross Revenue (₹)', 'Actual Energy MWh × 1000 × Tariff (₹/kWh)'],
+            ['Deviation MWh',         'Actual Energy MWh − Scheduled Energy MWh'],
+            ['Absolute Deviation kWh','ABS(Deviation MWh) × 1000'],
+            ['Gross Revenue (₹)',      'Actual Energy MWh × 1000 × Tariff (₹/kWh)'],
             ['Deviation Penalty (₹)', 'Absolute Deviation kWh × Penalty Rate (₹/kWh)'],
-            ['Net Revenue (₹)', 'Gross Revenue − Deviation Penalty'],
+            ['Net Revenue (₹)',        'Gross Revenue − Deviation Penalty'],
             ['Forecast Accuracy (%)', '100 − MAPE(Forecast, Actual)'],
-            ['MAPE', 'Mean(|Forecast − Actual| / Actual) × 100'],
-            ['Penalty Avoided (₹)', 'Estimated Penalty Without AI − Actual Penalty With AI'],
+            ['MAPE',                  'Mean(|Forecast − Actual| / Actual) × 100'],
+            ['Penalty Avoided (₹)',   'Estimated Penalty Without AI − Actual Penalty With AI'],
           ].map(([label, formula]) => (
             <div key={label} className="flex flex-wrap gap-2 items-start border-b border-slate-50 pb-2 last:border-0">
               <span className="text-sm font-semibold text-slate-700 w-48 shrink-0">{label}</span>
@@ -84,16 +85,16 @@ export const AssumptionsPage: React.FC = () => {
         </div>
       </Card>
 
-      <Card title="Supported Input Formats" icon="📁" iconBg="bg-green-50">
+      <Card title="Supported Input Formats" icon={<FolderOpen size={15} className="text-green-600" />} iconBg="bg-green-50">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-600">
           {[
-            ['File Types', 'CSV, XLSX, XLS, ZIP (containing CSV/XLSX)'],
-            ['Column Names', 'Any — auto-detected via fuzzy matching + NLP synonyms'],
-            ['Energy Units', 'MWh, kWh (÷1000), MU (×1000), MW (×block duration)'],
-            ['Currency Units', '₹, Rs, INR, lakh (×1L), crore (×1Cr)'],
-            ['Tariff Units', '₹/kWh, ₹/MWh (÷1000), ₹/unit'],
-            ['Percentages', '0–100 or 0–1 (auto-normalized)'],
-            ['Date Formats', 'ISO 8601, DD/MM/YYYY, DD-MM-YYYY, Excel serial'],
+            ['File Types',      'CSV, XLSX, XLS, ZIP (containing CSV/XLSX)'],
+            ['Column Names',    'Any — auto-detected via fuzzy matching + NLP synonyms'],
+            ['Energy Units',    'MWh, kWh (÷1000), MU (×1000), MW (×block duration)'],
+            ['Currency Units',  '₹, Rs, INR, lakh (×1L), crore (×1Cr)'],
+            ['Tariff Units',    '₹/kWh, ₹/MWh (÷1000), ₹/unit'],
+            ['Percentages',     '0–100 or 0–1 (auto-normalized)'],
+            ['Date Formats',    'ISO 8601, DD/MM/YYYY, DD-MM-YYYY, Excel serial'],
             ['Multiple Sheets', 'Each sheet detected and classified independently'],
           ].map(([k, v]) => (
             <div key={k} className="bg-slate-50 rounded-lg p-3">

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Zap, Shield, Target, BarChart2, AlertTriangle, CheckCircle2, TrendingUp, TrendingDown, Activity } from 'lucide-react';
 import { useAppStore } from '../store/appStore';
 import { EmptyState, Card, KPICard } from './shared/Card';
 import { fmtINR, fmtMWh, fmtPct } from './shared/formatters';
@@ -25,8 +26,8 @@ export const DeviationPage: React.FC = () => {
   const { intervalRows, assumptions } = useAppStore();
 
   const hasScheduled = intervalRows.some(r => r.scheduledEnergyMwh !== null);
-  if (!intervalRows.length) return <EmptyState icon="⚠️" message="No data loaded" />;
-  if (!hasScheduled) return <EmptyState icon="⚠️" message="Schedule data not available" sub="Map 'scheduled_energy_mwh' to enable deviation analysis." />;
+  if (!intervalRows.length) return <EmptyState icon={<AlertTriangle size={48} />} message="No data loaded" />;
+  if (!hasScheduled) return <EmptyState icon={<AlertTriangle size={48} />} message="Schedule data not available" sub="Map 'scheduled_energy_mwh' to enable deviation analysis." />;
 
   const totalPenalty = intervalRows.reduce((s, r) => s + (r.deviationPenalty ?? 0), 0);
   const accuracy = calcMAPE(intervalRows);
@@ -53,47 +54,47 @@ export const DeviationPage: React.FC = () => {
   return (
     <div className="space-y-6 fade-in">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <KPICard icon="⚡" label="Total Deviation Penalty" value={fmtINR(totalPenalty, true)} color="red" />
-        <KPICard icon="🛡️" label="Penalty Avoided by AI" value={fmtINR(penaltyAvoided, true)} color="green" tooltip="Estimated savings vs 82% baseline accuracy." />
-        <KPICard icon="🎯" label="AI Forecast Accuracy" value={fmtPct(accuracy)} color="blue" />
-        <KPICard icon="📊" label="Severe Deviation Blocks" value={countsByClass.severe.toString()} sub={`${fmtPct(countsByClass.severe / intervalRows.length * 100)} of blocks`} color={countsByClass.severe ? 'red' : 'green'} />
+        <KPICard icon={<Zap size={18} />} label="Total Deviation Penalty" value={fmtINR(totalPenalty, true)} color="red" />
+        <KPICard icon={<Shield size={18} />} label="Penalty Avoided by AI" value={fmtINR(penaltyAvoided, true)} color="green" tooltip="Estimated savings vs 82% baseline accuracy." />
+        <KPICard icon={<Target size={18} />} label="AI Forecast Accuracy" value={fmtPct(accuracy)} color="blue" />
+        <KPICard icon={<BarChart2 size={18} />} label="Severe Deviation Blocks" value={countsByClass.severe.toString()} sub={`${fmtPct(countsByClass.severe / intervalRows.length * 100)} of blocks`} color={countsByClass.severe ? 'red' : 'green'} />
       </div>
 
       {/* AI vs No-AI comparison */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card title="Without AI Forecasting" icon="❌" iconBg="bg-red-50">
+        <Card title="Without AI Forecasting" icon={<AlertTriangle size={15} className="text-red-500" />} iconBg="bg-red-50">
           <div className="space-y-3">
             <div className="text-center py-4">
               <div className="text-3xl font-bold text-red-600">{fmtINR(noAIPenalty, true)}</div>
               <div className="text-xs text-slate-400 mt-1">Estimated penalty at 82% accuracy</div>
             </div>
             <div className="flex items-center gap-2 text-xs bg-red-50 rounded-lg p-2">
-              <span>📉</span> Forecast accuracy: ~82%
+              <TrendingDown size={12} className="text-red-400 shrink-0" /> Forecast accuracy: ~82%
             </div>
             <div className="flex items-center gap-2 text-xs bg-red-50 rounded-lg p-2">
-              <span>💸</span> Higher schedule deviation exposure
+              <Zap size={12} className="text-red-400 shrink-0" /> Higher schedule deviation exposure
             </div>
           </div>
         </Card>
 
-        <Card title="With AI Forecasting" icon="✅" iconBg="bg-green-50">
+        <Card title="With AI Forecasting" icon={<CheckCircle2 size={15} className="text-green-500" />} iconBg="bg-green-50">
           <div className="space-y-3">
             <div className="text-center py-4">
               <div className="text-3xl font-bold text-green-600">{fmtINR(totalPenalty, true)}</div>
               <div className="text-xs text-slate-400 mt-1">Actual penalty incurred</div>
             </div>
             <div className="flex items-center gap-2 text-xs bg-green-50 rounded-lg p-2">
-              <span>📈</span> Forecast accuracy: {fmtPct(accuracy)}
+              <TrendingUp size={12} className="text-green-500 shrink-0" /> Forecast accuracy: {fmtPct(accuracy)}
             </div>
             <div className="flex items-center gap-2 text-xs bg-green-50 rounded-lg p-2">
-              <span>💰</span> Penalty avoided: {fmtINR(penaltyAvoided, true)}
+              <Shield size={12} className="text-green-500 shrink-0" /> Penalty avoided: {fmtINR(penaltyAvoided, true)}
             </div>
           </div>
         </Card>
       </div>
 
       {/* Deviation chart */}
-      <Card title="Deviation per Block (MWh)" icon="⚡" iconBg="bg-amber-50" subtitle="Positive = over-generation, Negative = under-generation">
+      <Card title="Deviation per Block (MWh)" icon={<Activity size={15} className="text-amber-600" />} iconBg="bg-amber-50" subtitle="Positive = over-generation, Negative = under-generation">
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={chartData} margin={{ right: 16 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -119,7 +120,7 @@ export const DeviationPage: React.FC = () => {
       </Card>
 
       {/* Penalty chart */}
-      <Card title="Deviation Penalty per Block (₹)" icon="💸" iconBg="bg-red-50">
+      <Card title="Deviation Penalty per Block (₹)" icon={<TrendingDown size={15} className="text-red-500" />} iconBg="bg-red-50">
         <ResponsiveContainer width="100%" height={200}>
           <AreaChart data={chartData} margin={{ right: 16 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
@@ -132,7 +133,7 @@ export const DeviationPage: React.FC = () => {
       </Card>
 
       {/* Distribution */}
-      <Card title="Deviation Classification Distribution" icon="📊" iconBg="bg-blue-50" subtitle="Number of 15-minute blocks by deviation severity">
+      <Card title="Deviation Classification Distribution" icon={<BarChart2 size={15} className="text-blue-600" />} iconBg="bg-blue-50" subtitle="Number of 15-minute blocks by deviation severity">
         <ResponsiveContainer width="100%" height={180}>
           <BarChart data={classDist} margin={{ right: 16 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
